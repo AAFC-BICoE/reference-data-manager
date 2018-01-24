@@ -4,17 +4,27 @@
 import os
 
 start_dir = "out/reference"
-wholegenomes_kingdoms = ["archaea", "bacteria", "fungi", "invertebrate"]
+ncbi_wholegenomes_kingdoms = ["archaea", "bacteria", "fungi", "invertebrate"]
 barcode_dirs = ["16S_Bacteria", "16S_Archea", "Fungi_ITS", "Insect_CO1"]
 # Move the taxonomy out to the same level as WholeGenome
 #ref_data_dirs = ['Taxonomy', 'Fasta', 'ToolDB']
 ref_data_dirs = ['Fasta', 'ToolDB']
 taxonomy_formats = ['qiime', 'mothur']
 
+# NCBI
+ncbi_ftp = "ftp://ftp.ncbi.nlm.nih.gov"
+ncbi_refseq_wholegenome_path = "/genomes/refseq/fungi/"
+ncbi_assembly_summary_file = "assembly_summary.txt"
+
+# Option on downloading files over ftp:
+# PyCurl python interface to libcurl. http://pycurl.io/docs/latest/
+# urllib: urllib.urlretrieve('ftp://server/path/to/file', 'file')
+# ftplib library
+# wget library. https://pypi.python.org/pypi/wget
 
 def main():
     try:
-        for k in wholegenomes_kingdoms:
+        for k in ncbi_wholegenomes_kingdoms:
             kingdom_dir = "{0}/WholeGenome/{1}".format(start_dir, k)
             for d in ref_data_dirs:
                 os.makedirs("{0}/ncbi/RefSeq/{1}".format(kingdom_dir, d), exist_ok=True)
