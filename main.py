@@ -1,6 +1,12 @@
-# Download, update and manage reference data for bioinformatics
-#
-# author: Oksana Korol
+'''
+Download, update and manage reference data for bioinformatics
+
+Created on Jan 21, 2018
+
+@author: korolo
+'''
+
+
 import os
 
 start_dir = "out/reference"
