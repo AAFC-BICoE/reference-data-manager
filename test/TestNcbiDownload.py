@@ -24,4 +24,11 @@ class TestNcbiDownload(unittest.TestCase):
         fixture = NcbiDownload.NcbiDownload()
         fixture.download_refseq_genomes('fungi', self.test_data_dir)
         print("{0}/{1}".format(self.test_data_dir, fixture.listing_file_name))
-        self.assertTrue(os.path.exists("{0}/{1}".format(self.test_data_dir, fixture.listing_file_name)), "Assembly summary file was not downloaded.")
+        self.assertTrue(os.path.exists("{0}/{1}".format(self.test_data_dir, fixture.listing_file_name)), \
+                        "Assembly summary file was not downloaded.")
+
+        self.assertTrue(os.path.exists("{0}/{1}".format(self.test_data_dir, 'ftpdirpaths')), \
+                        "Assembly ftp paths were not extracted.")
+
+        self.assertTrue(os.path.exists("{0}/{1}".format(self.test_data_dir, 'ftpfilepaths')), \
+                        "Assembly list file were not created.")
