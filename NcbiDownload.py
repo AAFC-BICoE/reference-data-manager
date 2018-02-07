@@ -4,15 +4,19 @@ Created on Feb 2, 2018
 @author: korolo
 '''
 import wget, ftplib, subprocess
+import re
 
+# TODO:
+# check download integrity
 
 class NcbiDownload:
     ''' Downloads data from NCBI'''
     def __init__(self):
-        self.ncbi_ftp = "ftp://ftp.ncbi.nlm.nih.gov"
-        self.genome_refseq_path = "/genomes/refseq/"
-        self.genome_genbank_path = "/genomes/genbank/"
-        self.listing_file_name = "assembly_summary.txt"
+        self.ncbi_ftp = "ftp.ncbi.nlm.nih.gov"
+        self.genome_refseq_ftp_dir = "/genomes/refseq/"
+        self.genome_genbank_ftp_dir = "/genomes/genbank/"
+        self.assembly_file_name = "assembly_summary.txt"
+        self.ftp_file_names = 'ftp_file_names.txt'
 
     def test_connection(self):
         '''Test if NCBI ftp is available.'''
@@ -20,8 +24,30 @@ class NcbiDownload:
         try:
             ftp_connection = ftplib.FTP(self.ncbi_ftp)
             ftp_connection.connect()
-            ftp_connection.voidcmd('NOOP')
-            ftp_connection.close()
+            ftp_connection.voidcmd("NOOP")
+            ftp_connection.quit()
+            return True
+        except:
+            return False
+
+    def parse_assembly_file(self, assembly_file, output_file):
+        '''
+        Parses assembly_reference.txt file from NCBI and extracts full ftp files paths to download.
+        :param assembly_file: full path to the assembly_summary.txt
+        :param output_file: full path to the file which will contain the result of parsing
+        :return: True if successfull, False otherwise
+        '''
+        try:
+            with open(assembly_file, "r") as in_obj, open(output_file, 'w') as out_obj:
+                in_obj.readline(), in_obj.readline()  # skip first 2 lines
+                for line in in_obj:
+                    # Parse
+                    line_items = re.split(r'\t', line)
+                    #print("{}\t{}".format(line_items[11], line_items[19]))
+
+                    # Write to file
+                    if line_items[11] == 'Complete Genome':
+                        out_obj.write(line_items[19]+'\n')
             return True
         except:
             return False
@@ -39,21 +65,33 @@ class NcbiDownload:
         # kingdoms are in accepted list
         print("NCBIDownload diskpath: "+disk_path)
 
+        '''
         if not self.test_connection():
             print("No connection to NCBI.")
             exit(0)
+        '''
 
-        ftp_url = "{0}{1}{2}/{3}".format(self.ncbi_ftp, self.genome_refseq_path, ncbi_kingdom_keyword, self.listing_file_name)
-        if ncbi_db == 'genbank':
-            ftp_url = "{0}{1}{2}/{3}".format(self.ncbi_ftp, self.genome_genbank_path, ncbi_kingdom_keyword, self.listing_file_name)
+        ftp_url = "ftp://{0}/genomes/{1}/{2}/{3}".format(self.ncbi_ftp, ncbi_db, ncbi_kingdom_keyword, self.assembly_file_name)
+        print("NcbiDownload ftp: " + ftp_url)
 
         filename = wget.download(ftp_url, out=disk_path)
 
+
+        if self.parse_assembly_file(disk_path+self.assembly_file_name, disk_path + self.ftp_file_names):
+            print("Parsed successfully")
+
+        else:
+            print("Failed to parse.")
+
+        '''
         try:
             # The commands below are copied from NCBI help page on data download https://www.ncbi.nlm.nih.gov/genome/doc/ftpfaq/#allcomplete
             # awk -F "\t" '$12=="Complete Genome" && $11=="latest"{print $20}' assembly_summary.txt > ftpdirpaths
             list_paths_cmd = 'awk -F "\\t" \'$12=="Complete Genome" && $11=="latest"{print $20}\' assembly_summary.txt > ftpdirpaths'
+            print(list_paths_cmd)
 
+            output = subprocess.check_output('ls', shell=True)
+            print(output)
             list_result = subprocess.check_output(list_paths_cmd, shell=True)
 
             # awk 'BEGIN{FS=OFS="/";filesuffix="genomic.gbff.gz"}{ftpdir=$0;asm=$10;file=asm"_"filesuffix;print ftpdir,file}' ftpdirpaths > ftpfilepaths
@@ -61,6 +99,7 @@ class NcbiDownload:
             add_names_result = subprocess.check_output(add_file_names_cmd, shell=True)
         except subprocess.CalledProcessError as e:
             print("Error processing assembly file for {}".format(ncbi_kingdom_keyword))
+        '''
 
 if __name__ == "__main__":
     #NcbiDownload.download_genomes('refseq','fungi','~/reference-data-manager/out/')

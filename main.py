@@ -24,11 +24,7 @@ ncbi_ftp = "ftp://ftp.ncbi.nlm.nih.gov"
 ncbi_refseq_wholegenome_path = "/genomes/refseq/fungi/"
 ncbi_assembly_summary_file = "assembly_summary.txt"
 
-# Option on downloading files over ftp:
-# PyCurl python interface to libcurl. http://pycurl.io/docs/latest/
-# urllib: urllib.urlretrieve('ftp://server/path/to/file', 'file')
-# ftplib library
-# wget library. https://pypi.python.org/pypi/wget
+
 
 def main():
     try:
