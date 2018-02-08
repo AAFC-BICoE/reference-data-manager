@@ -7,7 +7,17 @@ import wget, ftplib, subprocess
 import re
 
 # TODO:
-# check download integrity
+## Time and throttle (if needed) ftp download
+## Socket problem:
+'''
+When running TestNcbiDownload, get this error:
+/usr/local/Cellar/python3/3.6.4_1/Frameworks/Python.framework/Versions/3.6/lib/python3.6/socket.py:657: ResourceWarning: unclosed <socket.socket fd=5, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=6, laddr=('192.168.0.109', 54039), raddr=('130.14.250.10', 21)>
+  self._sock = None
+
+Could be because of not finishing debugging of the unit test properly
+'''
+## check download integrity
+##
 
 class NcbiDownload:
     ''' Downloads data from NCBI'''
@@ -37,6 +47,7 @@ class NcbiDownload:
         :param output_file: full path to the file which will contain the result of parsing
         :return: True if successfull, False otherwise
         '''
+        file_list = list()
         try:
             with open(assembly_file, "r") as in_obj, open(output_file, 'w') as out_obj:
                 in_obj.readline(), in_obj.readline()  # skip first 2 lines
@@ -49,16 +60,18 @@ class NcbiDownload:
                         dir_name = line_items[19]
                         dir_list = re.split('/', dir_name)
                         full_file_name = "{}/{}_genomic.fna.gz".format(dir_name, dir_list[-1])
+                        file_list.append(full_file_name)
                         out_obj.write(full_file_name + '\n')
-            return True
+            return file_list
         except:
-            return False
+            # TODO log
+            return None
 
 
     def download_refseq_genomes(self, ncbi_kingdom_keyword, disk_path):
         self.download_genomes('refseq', ncbi_kingdom_keyword, disk_path)
 
-
+    
     def download_genomes(self, ncbi_db, ncbi_kingdom_keyword, disk_path):
         # TODO: Check / massage the coming data
         # Disk path ends with /
@@ -77,30 +90,12 @@ class NcbiDownload:
         filename = wget.download(ftp_url, out=disk_path)
 
 
-        if self.parse_assembly_file(disk_path+self.assembly_file_name, disk_path + self.ftp_file_names):
-            print("Parsed successfully")
+        ftp_file_list = self.parse_assembly_file(disk_path+self.assembly_file_name, disk_path + self.ftp_file_names)
+        if ftp_file_list is not None:
+            for f in ftp_file_list:
+                wget.download(f, out=disk_path)
 
-        else:
-            print("Failed to parse.")
-            return False
 
-        '''
-        try:
-            # The commands below are copied from NCBI help page on data download https://www.ncbi.nlm.nih.gov/genome/doc/ftpfaq/#allcomplete
-            # awk -F "\t" '$12=="Complete Genome" && $11=="latest"{print $20}' assembly_summary.txt > ftpdirpaths
-            list_paths_cmd = 'awk -F "\\t" \'$12=="Complete Genome" && $11=="latest"{print $20}\' assembly_summary.txt > ftpdirpaths'
-            print(list_paths_cmd)
-
-            output = subprocess.check_output('ls', shell=True)
-            print(output)
-            list_result = subprocess.check_output(list_paths_cmd, shell=True)
-
-            # awk 'BEGIN{FS=OFS="/";filesuffix="genomic.gbff.gz"}{ftpdir=$0;asm=$10;file=asm"_"filesuffix;print ftpdir,file}' ftpdirpaths > ftpfilepaths
-            add_file_names_cmd = 'awk \'BEGIN{FS=OFS="/";filesuffix="genomic.gbff.gz"}{ftpdir=$0;asm=$10;file=asm"_"filesuffix;print ftpdir,file}\' ftpdirpaths > ftpfilepaths'
-            add_names_result = subprocess.check_output(add_file_names_cmd, shell=True)
-        except subprocess.CalledProcessError as e:
-            print("Error processing assembly file for {}".format(ncbi_kingdom_keyword))
-        '''
         return True
 
 if __name__ == "__main__":
