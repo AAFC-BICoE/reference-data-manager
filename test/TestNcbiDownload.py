@@ -20,6 +20,7 @@ class TestNcbiDownload(unittest.TestCase):
         shutil.rmtree(self.test_data_dir)
         pass
 
+    '''
     def test_download_refseq_genomes(self):
         fixture = NcbiDownload.NcbiDownload()
         fixture.download_refseq_genomes('fungi', self.test_data_dir)
@@ -37,3 +38,22 @@ class TestNcbiDownload(unittest.TestCase):
         self.assertTrue(os.path.exists("{0}/{1}".format(self.test_data_dir, 'GCF_001640025.1_ASM164002v2_genomic.fna.gz')), \
                         "Expected fasta file is not in the download directory.")
 
+    '''
+
+    def test_download_genbank_genomes(self):
+        fixture = NcbiDownload.NcbiDownload()
+        fixture.download_genbank_genomes('fungi', self.test_data_dir)
+        print("{0}/{1}".format(self.test_data_dir, fixture.assembly_file_name))
+        self.assertTrue(os.path.exists("{0}/{1}".format(self.test_data_dir, fixture.assembly_file_name)), \
+                        "Assembly summary file was not downloaded.")
+
+        self.assertTrue(os.path.exists("{0}/{1}".format(self.test_data_dir, fixture.ftp_file_names)), \
+                        "Assembly ftp paths were not extracted.")
+        '''
+        # Test for downloaded fasta
+        self.assertTrue(os.path.exists("{0}/{1}".format(self.test_data_dir, 'GCF_001417885.1_Kmar_1.0_genomic.fna.gz')), \
+                        "Expected fasta file is not in the download directory.")
+
+        self.assertTrue(os.path.exists("{0}/{1}".format(self.test_data_dir, 'GCF_001640025.1_ASM164002v2_genomic.fna.gz')), \
+                        "Expected fasta file is not in the download directory.")
+        '''

@@ -71,7 +71,9 @@ class NcbiDownload:
     def download_refseq_genomes(self, ncbi_kingdom_keyword, disk_path):
         self.download_genomes('refseq', ncbi_kingdom_keyword, disk_path)
 
-    
+    def download_genbank_genomes(self, ncbi_kingdom_keyword, disk_path):
+        self.download_genomes('genbank', ncbi_kingdom_keyword, disk_path)
+
     def download_genomes(self, ncbi_db, ncbi_kingdom_keyword, disk_path):
         # TODO: Check / massage the coming data
         # Disk path ends with /
