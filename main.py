@@ -9,7 +9,9 @@ Created on Jan 21, 2018
 
 import os
 
-start_dir = "out/reference"
+from NcbiDownload import NcbiDownload
+
+reference_start_dir = "out/reference"
 ncbi_wholegenomes_kingdoms = ["archaea", "bacteria", "fungi", "invertebrate"]
 #barcode_dirs = ["16S_Bacteria", "16S_Archea", "Fungi_ITS", "Insect_CO1"]
 barcode_db_dirs = ["16S_Bacteria/GreenGenes", "16S_Archea/GreenGenes", "Fungi_ITS/Unite", "Insect_CO1/ncbi"]
@@ -26,7 +28,7 @@ ncbi_assembly_summary_file = "assembly_summary.txt"
 
 
 
-def main():
+def create_directory_structure(start_dir):
     try:
         ### Whole Genome
         for k in ncbi_wholegenomes_kingdoms:
@@ -58,13 +60,24 @@ def main():
         os.makedirs("{0}/Protein/ToolDB/Humann/".format(start_dir), exist_ok=True)
 
         ### Everything
-        # ncbi_nr_nt is not a very good name, think of a better one
         os.makedirs("{0}/ncbi_nr_nt".format(start_dir), exist_ok=True)
 
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
 
+def download_ncbi_whole_genome():
+    downloadObj = NcbiDownload()
+    for k in ncbi_wholegenomes_kingdoms:
+        local_dir = "{0}/WholeGenome/{1}/ncbi/RefSeq/Fasta".format(reference_start_dir, k)
+        downloadObj.download_refseq_genomes(k,local_dir)
+
+        local_dir = "{0}/WholeGenome/{1}/ncbi/GenBank/Fasta".format(reference_start_dir, k)
+        #downloadObj.download_genbank_genomes(k,local_dir)
+
+def main():
+    create_directory_structure(reference_start_dir)
+    download_ncbi_whole_genome()
 
 if __name__ == "__main__":
     main()

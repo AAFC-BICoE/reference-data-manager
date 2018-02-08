@@ -67,11 +67,9 @@ class NcbiDownload:
         # kingdoms are in accepted list
         print("NCBIDownload diskpath: "+disk_path)
 
-        '''
         if not self.test_connection():
             print("No connection to NCBI.")
             exit(0)
-        '''
 
         ftp_url = "ftp://{0}/genomes/{1}/{2}/{3}".format(self.ncbi_ftp, ncbi_db, ncbi_kingdom_keyword, self.assembly_file_name)
         print("NcbiDownload ftp: " + ftp_url)
@@ -84,6 +82,7 @@ class NcbiDownload:
 
         else:
             print("Failed to parse.")
+            return False
 
         '''
         try:
@@ -102,6 +101,7 @@ class NcbiDownload:
         except subprocess.CalledProcessError as e:
             print("Error processing assembly file for {}".format(ncbi_kingdom_keyword))
         '''
+        return True
 
 if __name__ == "__main__":
     #NcbiDownload.download_genomes('refseq','fungi','~/reference-data-manager/out/')

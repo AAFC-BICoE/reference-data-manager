@@ -17,7 +17,7 @@ class TestNcbiDownload(unittest.TestCase):
         os.makedirs(self.test_data_dir, exist_ok=True)
 
     def tearDown(self):
-        #shutil.rmtree("{0}/{1}".format(working_dir,self.test_data_dir))
+        shutil.rmtree(self.test_data_dir)
         pass
 
     def test_download_refseq_genomes(self):
