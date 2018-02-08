@@ -41,13 +41,15 @@ class NcbiDownload:
             with open(assembly_file, "r") as in_obj, open(output_file, 'w') as out_obj:
                 in_obj.readline(), in_obj.readline()  # skip first 2 lines
                 for line in in_obj:
-                    # Parse
+                    # Parse and write to file
                     line_items = re.split(r'\t', line)
                     #print("{}\t{}".format(line_items[11], line_items[19]))
 
-                    # Write to file
                     if line_items[11] == 'Complete Genome':
-                        out_obj.write(line_items[19]+'\n')
+                        dir_name = line_items[19]
+                        dir_list = re.split('/', dir_name)
+                        full_file_name = "{}/{}_genomic.fna.gz".format(dir_name, dir_list[-1])
+                        out_obj.write(full_file_name + '\n')
             return True
         except:
             return False
