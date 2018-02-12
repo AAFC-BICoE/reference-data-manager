@@ -8,7 +8,7 @@ import re
 
 # TODO:
 ## Time and throttle (if needed) ftp download
-## Socket problem:
+## Socket problem: Briefly looked into it. It happens during the unittest run. Seems to be a bug with urllib and unittest.
 '''
 When running TestNcbiDownload, get this error:
 /usr/local/Cellar/python3/3.6.4_1/Frameworks/Python.framework/Versions/3.6/lib/python3.6/socket.py:657: ResourceWarning: unclosed <socket.socket fd=5, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=6, laddr=('192.168.0.109', 54039), raddr=('130.14.250.10', 21)>
@@ -69,12 +69,19 @@ class NcbiDownload:
 
 
     def download_refseq_genomes(self, ncbi_kingdom_keyword, disk_path):
-        self.download_genomes('refseq', ncbi_kingdom_keyword, disk_path)
+        return self.download_genomes('refseq', ncbi_kingdom_keyword, disk_path)
 
     def download_genbank_genomes(self, ncbi_kingdom_keyword, disk_path):
-        self.download_genomes('genbank', ncbi_kingdom_keyword, disk_path)
+        return self.download_genomes('genbank', ncbi_kingdom_keyword, disk_path)
 
     def download_genomes(self, ncbi_db, ncbi_kingdom_keyword, disk_path):
+        '''
+
+        :param ncbi_db:
+        :param ncbi_kingdom_keyword:
+        :param disk_path:
+        :return: number of records that were downloaded
+        '''
         # TODO: Check / massage the coming data
         # Disk path ends with /
         if not disk_path.endswith("/"):
@@ -84,7 +91,7 @@ class NcbiDownload:
 
         if not self.test_connection():
             print("No connection to NCBI.")
-            exit(0)
+            return 0
 
         ftp_url = "ftp://{0}/genomes/{1}/{2}/{3}".format(self.ncbi_ftp, ncbi_db, ncbi_kingdom_keyword, self.assembly_file_name)
         print("NcbiDownload ftp: " + ftp_url)
@@ -98,7 +105,7 @@ class NcbiDownload:
                 wget.download(f, out=disk_path)
 
 
-        return True
+        return len(ftp_file_list)
 
 if __name__ == "__main__":
     #NcbiDownload.download_genomes('refseq','fungi','~/reference-data-manager/out/')
