@@ -5,6 +5,8 @@ Created on Feb 2, 2018
 '''
 import wget, ftplib, subprocess
 import re
+# biopython
+import Bio.Entrez as Entrez
 
 # TODO:
 ## Time and throttle (if needed) ftp download
@@ -106,6 +108,29 @@ class NcbiDownload:
 
 
         return len(ftp_file_list)
+
+    def download_fungal_ITS(self):
+        return self.download_barcodes('some ncbi query')
+
+
+    def download_barcodes(self, ncbi_query):
+        '''
+        Perform a query on NCBI and download resulting sequences
+        :param ncbi_query:
+        :return:
+        '''
+        Entrez.email = 'oksana.korol@agr.gc.ca'
+        Entrez.tool = 'AAFC Reference Data Manager'
+
+        handle = Entrez.einfo()
+        result = handle.read()
+        handle.close()
+
+        print(result)
+
+        return 0
+
+
 
 if __name__ == "__main__":
     #NcbiDownload.download_genomes('refseq','fungi','~/reference-data-manager/out/')

@@ -62,3 +62,9 @@ class TestNcbiDownload(unittest.TestCase):
         self.assertTrue(os.path.exists("{0}/{1}".format(self.test_data_dir, 'GCA_900149175.1_Msy_KS004_June2015_genomic.fna.gz')), \
                         "Expected fasta file is not in the download directory.")
 
+
+    def test_query_download(self):
+        fixture = NcbiDownload.NcbiDownload()
+        file_num = fixture.download_barcodes('blah')
+        self.assertTrue(file_num >= 8,
+                "Expecting more then 8 fungal ITS sequences from RefSeq, but downloaded {}.".format(file_num))

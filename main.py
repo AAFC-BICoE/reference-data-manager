@@ -6,6 +6,10 @@ Created on Jan 21, 2018
 @author: korolo
 '''
 
+# TODO:
+## Logging
+## README mechanizm
+## Backup mechanizm
 
 import os
 
