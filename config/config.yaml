@@ -1,0 +1,36 @@
+seqdb:
+    url: "http://onottra670245x:2002/seqdb/api/v1/"       # e.g. "http://seqdb.biodiversity.agr.gc.ca/api/v1/"
+
+galaxy:
+    ncbi_taxonomy_dir: "<location of ncbi taxonomy dump (where nodes.dmp is)>"   #e.g. "/home/galaxy/galaxy-dist/tool-data/taxonomy/"
+
+http_connect:
+    debug_level: 0 # 0 - No output, 1 - Output to stderr
+
+logging:
+
+    version: 1
+    disable_existing_loggers: true
+
+    formatters:
+        briefFormatter:
+            format: '%(levelname)s: %(message)s' 
+        preciseFormatter:
+            format: '%(asctime)s - %(module)s - %(levelname)s: %(message)s'
+            datefmt: '%Y/%m/%d %H:%M:%S'
+
+    handlers:
+        console:
+            class: logging.StreamHandler
+            formatter: briefFormatter
+            level: ERROR
+            stream: ext://sys.stdout
+        file:
+            class : logging.FileHandler
+            formatter: preciseFormatter
+            level: DEBUG
+            filename: seqdb_tools_debug.log
+
+    root:
+        level: INFO # Not producing debug info by default
+        handlers: [console, file]

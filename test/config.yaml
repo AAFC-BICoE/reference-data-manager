@@ -1,0 +1,41 @@
+default_update_frequency: 15
+root_folder: "/start/folder/for/reference/data/"
+
+ncbi:
+    update_frequency: 30   # default for ncbi
+    blast_db:
+      update_frequency: 60  # specific for blast db (ncbi nr/nt)
+      ftp: "ftp://ftp.ncbi.nlm.nih.gov/blast/db/"
+
+
+
+http_connect:
+    debug_level: 0 # 0 - No output, 1 - Output to stderr
+
+logging:
+
+    version: 1
+    disable_existing_loggers: true
+
+    formatters:
+        briefFormatter:
+            format: '%(levelname)s: %(message)s' 
+        preciseFormatter:
+            format: '%(asctime)s - %(module)s - %(levelname)s: %(message)s'
+            datefmt: '%Y/%m/%d %H:%M:%S'
+
+    handlers:
+        console:
+            class: logging.StreamHandler
+            formatter: briefFormatter
+            level: ERROR
+            stream: ext://sys.stdout
+        file:
+            class : logging.FileHandler
+            formatter: preciseFormatter
+            level: DEBUG
+            filename: seqdb_tools_debug.log
+
+    root:
+        level: INFO # Not producing debug info by default
+        handlers: [console, file]
