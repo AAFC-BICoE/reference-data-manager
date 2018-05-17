@@ -81,7 +81,7 @@ def download_ncbi_whole_genome():
 
 def main():
     create_directory_structure(reference_start_dir)
-    download_ncbi_whole_genome()
+    #download_ncbi_whole_genome()
 
 if __name__ == "__main__":
     main()

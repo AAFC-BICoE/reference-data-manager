@@ -1,8 +1,3 @@
-'''
-Created on Feb 2, 2018
-
-@author: korolo
-'''
 import wget, ftplib, subprocess
 import re
 # biopython
@@ -11,6 +6,8 @@ import Bio.Entrez as Entrez
 # TODO:
 ## Time and throttle (if needed) ftp download
 ## Socket problem: Briefly looked into it. It happens during the unittest run. Seems to be a bug with urllib and unittest.
+## Get email out
+## Log
 '''
 When running TestNcbiDownload, get this error:
 /usr/local/Cellar/python3/3.6.4_1/Frameworks/Python.framework/Versions/3.6/lib/python3.6/socket.py:657: ResourceWarning: unclosed <socket.socket fd=5, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=6, laddr=('192.168.0.109', 54039), raddr=('130.14.250.10', 21)>
@@ -122,11 +119,15 @@ class NcbiDownload:
         Entrez.email = 'oksana.korol@agr.gc.ca'
         Entrez.tool = 'AAFC Reference Data Manager'
 
+        #handle = Entrez.einfo(db="pubmed")
         handle = Entrez.einfo()
-        result = handle.read()
+        #result = handle.read()
+        record = Entrez.read(handle)
+        #print(record["DbInfo"]["Description"])
+
         handle.close()
 
-        print(result)
+        print(record["DbList"])
 
         return 0
 
@@ -135,4 +136,5 @@ class NcbiDownload:
 if __name__ == "__main__":
     #NcbiDownload.download_genomes('refseq','fungi','~/reference-data-manager/out/')
     #NcbiDownload().download_refseq_genomes("fungi","~/reference-data-manager/out/")
+    NcbiDownload().download_fungal_ITS()
     pass
