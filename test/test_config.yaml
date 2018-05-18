@@ -1,9 +1,10 @@
 ## This configuration file is for test purposes. Set root_folder and other attributes accordingly.
 default_update_frequency: 15
-root_folder: "/start/folder/for/reference/data/"
+root_folder: "../out/reference/"
 
 ncbi:
     update_frequency: 30   # default for ncbi
+    destination_folder: "ncbi/"
     blast_db:
       update_frequency: 60  # specific for blast db (ncbi nr/nt)
       ftp: "ftp://ftp.ncbi.nlm.nih.gov/blast/db/"

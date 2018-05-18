@@ -1,10 +1,14 @@
 import abc
 import yaml
+import requests
+import os
+from RefDataInterface import RefDataInterface
 
-class BaseRefData(metaclass=abc.ABCMeta):
+class BaseRefData(RefDataInterface):
 
     def __init__(self, config_file):
         self._config = self.load_config(config_file)
+        self._root_dir = self._config['root_folder']
 
     @property
     def config(self):
@@ -14,30 +18,30 @@ class BaseRefData(metaclass=abc.ABCMeta):
     def setConfig(self, config):
         self._config = config
 
-    @abc.abstractmethod
+
     def getUpdateFrequency(self):
         raise NotImplementedError('Need to define getUpdateFrequency method to use this base class.')
 
-    @abc.abstractmethod
+
     def getDownloadUrl(self):
         raise NotImplementedError('Need to define getDownloadUrl method to use this base class.')
 
-    @abc.abstractmethod
-    def getDestinationFolder(self):
-        raise NotImplementedError('Need to define getDestinationFolder method to use this base class.')
 
-    @abc.abstractmethod
+    def getDestinationFolder(self):
+        return self._root_dir
+
+
     def testConnection(self):
         raise NotImplementedError('Need to define testConnection method to use this base class.')
 
-    @abc.abstractmethod
+
     def download(self):
         raise NotImplementedError('Need to define download method to use this base class.')
+
 
     def load_config(self, config_file):
 
         with open(config_file, 'r') as stream:
-
             try:
                 config = yaml.load(stream)
             except yaml.YAMLError as exc:
@@ -47,3 +51,18 @@ class BaseRefData(metaclass=abc.ABCMeta):
                 print("Current working script is: %s" % os.path.abspath(__file__))
 
         return config
+
+
+    #file_url = 'https://gist.github.com/oxyko/10798051fb9cf1e11f4baac2c6c49f3b/archive/44e343bfe87f56fbc8bb6fbf3a48294aa7b0a1b6.zip'
+    def download_file(self, file_url, destination_dir):
+        local_file_name = destination_dir + file_url.split('/')[-1]
+        r = requests.get(file_url, stream=True)  # stream=True makes sure that python does not run out of memory when reading/writing
+        with open(local_file_name, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=512 * 1024):
+                if chunk:
+                    f.write(chunk)
+        return local_file_name
+
+
+    def delete_file(self, full_file_name):
+        os.remove(full_file_name)

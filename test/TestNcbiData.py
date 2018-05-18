@@ -4,13 +4,13 @@ import os, shutil
 
 class TestNcbiData(unittest.TestCase):
 
-    _test_yaml_file = 'config.yaml'
 
     def setUp(self):
-        self.fixture = NcbiData(self._test_yaml_file)
+        self.fixture = NcbiData('test_config.yaml')
+
 
     def tearDown(self):
-        #shutil.rmtree(self.test_data_dir)
+        #shutil.rmtree(self.fixture.getDestinationFolder())
         pass
 
 
@@ -18,4 +18,8 @@ class TestNcbiData(unittest.TestCase):
 
         ncbiUpdateFrequency = self.fixture.getUpdateFrequency()
         self.assertTrue(ncbiUpdateFrequency == 30, "Expecting 30.")
+
+        destination_folder = self.fixture.getDestinationFolder()
+        self.assertEqual(destination_folder, '../out/reference/ncbi/')
+
 
