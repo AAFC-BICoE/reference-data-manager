@@ -1,8 +1,13 @@
-seqdb:
-    url: "http://onottra670245x:2002/seqdb/api/v1/"       # e.g. "http://seqdb.biodiversity.agr.gc.ca/api/v1/"
+default_update_frequency: 15
+root_folder: "/start/folder/for/reference/data/"
 
-galaxy:
-    ncbi_taxonomy_dir: "<location of ncbi taxonomy dump (where nodes.dmp is)>"   #e.g. "/home/galaxy/galaxy-dist/tool-data/taxonomy/"
+ncbi:
+    update_frequency: 30   # default for ncbi
+    blast_db:
+      update_frequency: 60  # specific for blast db (ncbi nr/nt)
+      ftp: "ftp://ftp.ncbi.nlm.nih.gov/blast/db/"
+
+
 
 http_connect:
     debug_level: 0 # 0 - No output, 1 - Output to stderr
