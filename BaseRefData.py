@@ -2,12 +2,16 @@ import abc
 import yaml
 import requests
 import os
+import logging.config
 from RefDataInterface import RefDataInterface
 
 class BaseRefData(RefDataInterface):
 
     def __init__(self, config_file):
         self._config = self.load_config(config_file)
+        # TODO: Check if config was loaded
+        logging.config.dictConfig(self._config['logging'])
+        logging.info("Configuration was loaded. Logging is set up.")
         self._root_dir = self._config['root_folder']
 
     @property
@@ -63,6 +67,8 @@ class BaseRefData(RefDataInterface):
             for chunk in r.iter_content(chunk_size=512 * 1024):
                 if chunk:
                     f.write(chunk)
+
+        logging.info("Downloaded a file: {}".format(local_file_name))
         return local_file_name
 
     def unzip_file(self):
@@ -70,3 +76,4 @@ class BaseRefData(RefDataInterface):
 
     def delete_file(self, full_file_name):
         os.remove(full_file_name)
+

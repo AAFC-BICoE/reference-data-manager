@@ -38,3 +38,4 @@ class NcbiData(BaseRefData):
         blast_db_ftp = self.config['ncbi']['blast_db']['ftp']
 
         #TODO: Check time, and if it is not after hours for ncbi, give a warning
+        # Check out warning.warn(): https://docs.python.org/3/library/warnings.html#warnings.warn

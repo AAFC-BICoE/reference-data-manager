@@ -6,9 +6,9 @@ ncbi:
     update_frequency: 30   # default for ncbi
     destination_folder: "ncbi/"
     blast_db:
-      update_frequency: 60  # specific for blast db (ncbi nr/nt)
-      ftp: "ftp://ftp.ncbi.nlm.nih.gov/blast/db/"
-      destination_folder: "blast/"
+        update_frequency: 60  # specific for blast db (ncbi nr/nt)
+        ftp: "ftp://ftp.ncbi.nlm.nih.gov/blast/db/"
+        destination_folder: "blast/"
 
 
 
@@ -22,7 +22,7 @@ logging:
 
     formatters:
         briefFormatter:
-            format: '%(levelname)s: %(message)s' 
+            format: '%(levelname)s: %(message)s'
         preciseFormatter:
             format: '%(asctime)s - %(module)s - %(levelname)s: %(message)s'
             datefmt: '%Y/%m/%d %H:%M:%S'
@@ -37,8 +37,8 @@ logging:
             class : logging.FileHandler
             formatter: preciseFormatter
             level: DEBUG
-            filename: seqdb_tools_debug.log
+            filename: test.log
 
     root:
-        level: INFO # Not producing debug info by default
+        level: DEBUG
         handlers: [console, file]
