@@ -56,6 +56,8 @@ class BaseRefData(RefDataInterface):
     #file_url = 'https://gist.github.com/oxyko/10798051fb9cf1e11f4baac2c6c49f3b/archive/44e343bfe87f56fbc8bb6fbf3a48294aa7b0a1b6.zip'
     def download_file(self, file_url, destination_dir):
         local_file_name = destination_dir + file_url.split('/')[-1]
+        if not os.path.exists(destination_dir):
+            os.makedirs(destination_dir)
         r = requests.get(file_url, stream=True)  # stream=True makes sure that python does not run out of memory when reading/writing
         with open(local_file_name, 'wb') as f:
             for chunk in r.iter_content(chunk_size=512 * 1024):
@@ -63,6 +65,8 @@ class BaseRefData(RefDataInterface):
                     f.write(chunk)
         return local_file_name
 
+    def unzip_file(self):
+        pass
 
     def delete_file(self, full_file_name):
         os.remove(full_file_name)

@@ -10,8 +10,9 @@ class TestNcbiData(unittest.TestCase):
 
 
     def tearDown(self):
-        shutil.rmtree(self.fixture.getDestinationFolder())
-        pass
+        if os.path.exists(self.fixture.getDestinationFolder()):
+            shutil.rmtree(self.fixture.getDestinationFolder())
+
 
 
     def test_download_delete_file(self):
@@ -22,4 +23,4 @@ class TestNcbiData(unittest.TestCase):
         self.assertTrue(os.path.isfile(local_file), "Expecting file to be downloaded")
 
         self.fixture.delete_file(local_file)
-        self.assertFalse(os.path.isfile(local_file), "Expecting file to be downloaded")
+        self.assertFalse(os.path.isfile(local_file), "Expecting file to be deleted")
