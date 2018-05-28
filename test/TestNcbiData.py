@@ -20,6 +20,13 @@ class TestNcbiData(unittest.TestCase):
         self.assertTrue(ncbiUpdateFrequency == 30, "Expecting 30.")
 
         destination_folder = self.fixture.getDestinationFolder()
-        self.assertEqual(destination_folder, '../out/reference/ncbi/')
+        self.assertEqual(destination_folder, '../out/test/ncbi/')
 
 
+    def testDownloadBlastDB(self):
+        readme_file = self.fixture.getDestinationFolder() + "README+"
+        print(readme_file)
+
+        self.fixture.downloadBlastDB()
+
+        self.assertTrue(os.path.isfile(readme_file), "README+ file should be created with the download.")

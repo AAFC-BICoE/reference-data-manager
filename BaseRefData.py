@@ -1,18 +1,24 @@
-import abc
 import yaml
 import requests
 import os
 import logging.config
-from RefDataInterface import RefDataInterface
+import datetime
 
-class BaseRefData(RefDataInterface):
+
+class BaseRefData():
 
     def __init__(self, config_file):
         self._config = self.load_config(config_file)
         # TODO: Check if config was loaded
         logging.config.dictConfig(self._config['logging'])
         logging.info("Configuration was loaded. Logging is set up.")
-        self._root_dir = self._config['root_folder']
+
+        self._root_dir = os.path.abspath(self._config['root_folder'])
+        if not os.path.exists(self._root_dir):
+            os.makedirs(self._root_dir)
+        #TODO: catch all exceptions
+
+
 
     @property
     def config(self):
@@ -32,15 +38,8 @@ class BaseRefData(RefDataInterface):
 
 
     def getDestinationFolder(self):
-        return self._root_dir
+        return self._root_dir + "/"
 
-
-    def testConnection(self):
-        raise NotImplementedError('Need to define testConnection method to use this base class.')
-
-
-    def download(self):
-        raise NotImplementedError('Need to define download method to use this base class.')
 
 
     def load_config(self, config_file):
@@ -77,3 +76,15 @@ class BaseRefData(RefDataInterface):
     def delete_file(self, full_file_name):
         os.remove(full_file_name)
 
+    def write_readme(self, download_url, files, comment=''):
+        file_name = self.getDestinationFolder() + self._config['readme_file']
+        print("Readme file: " + file_name)
+        with open(file_name, 'w') as f:
+            f.write("About: this an automatically generated description file for the data located in this folder.")
+            if comment:
+                f.write(comment)
+            # now.strftime("%Y-%m-%d %H:%M")
+            f.write("Downloaded on: {}".format(datetime.datetime.now()))
+            f.write("Downloaded from: {}".format(download_url))
+            f.write("List of downloaded files: ")
+            f.write(files)

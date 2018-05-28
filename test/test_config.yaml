@@ -1,6 +1,7 @@
 ## This configuration file is for test purposes. Set root_folder and other attributes accordingly.
 default_update_frequency: 15
 root_folder: "../out/test/"
+readme_file: "README+"
 
 ncbi:
     update_frequency: 30   # default for ncbi
