@@ -10,8 +10,8 @@ class TestNcbiData(unittest.TestCase):
 
 
     def tearDown(self):
-        if os.path.exists(self.fixture.getDestinationFolder()):
-            shutil.rmtree(self.fixture.getDestinationFolder())
+        if os.path.exists(self.fixture.destination_dir):
+            shutil.rmtree(self.fixture.destination_dir)
 
 
 
@@ -24,3 +24,8 @@ class TestNcbiData(unittest.TestCase):
 
         self.fixture.delete_file(local_file)
         self.assertFalse(os.path.isfile(local_file), "Expecting file to be deleted")
+
+    def test_write_readme(self):
+        self.fixture.write_readme(download_url='http://some/url', files=['file1','file2', 'file3'], comment='This is a comment string.')
+        expected_file_name = "{}{}".format(self.fixture.destination_dir, self.fixture.config['readme_file'])
+        self.assertTrue(os.path.isfile(expected_file_name), "Expecting a readme file")

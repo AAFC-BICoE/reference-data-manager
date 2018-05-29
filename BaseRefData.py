@@ -8,16 +8,20 @@ import datetime
 class BaseRefData():
 
     def __init__(self, config_file):
-        self._config = self.load_config(config_file)
+        self.config = self.load_config(config_file)
         # TODO: Check if config was loaded
         logging.config.dictConfig(self._config['logging'])
-        logging.info("Configuration was loaded. Logging is set up.")
 
-        self._root_dir = os.path.abspath(self._config['root_folder'])
-        if not os.path.exists(self._root_dir):
-            os.makedirs(self._root_dir)
+        #logging.critical("RDM application has started. Log file is here: {}.".format(self._config['logging']['handlers']['file']['filename']))
+
+        self.destination_dir = os.path.abspath(self._config['root_folder']) + '/'
+        if not os.path.exists(self.destination_dir):
+            os.makedirs(self.destination_dir)
+
+        #self._root_dir = os.path.abspath(self._config['root_folder'])
+        #if not os.path.exists(self._root_dir):
+        #    os.makedirs(self._root_dir)
         #TODO: catch all exceptions
-
 
 
     @property
@@ -25,8 +29,16 @@ class BaseRefData():
         return self._config
 
     @config.setter
-    def setConfig(self, config):
-        self._config = config
+    def config(self, value):
+        self._config = value
+
+    @property
+    def destination_dir(self):
+        return self._destination_dir
+
+    @destination_dir.setter
+    def destination_dir(self, value):
+        self._destination_dir = value
 
 
     def getUpdateFrequency(self):
@@ -36,10 +48,10 @@ class BaseRefData():
     def getDownloadUrl(self):
         raise NotImplementedError('Need to define getDownloadUrl method to use this base class.')
 
-
+    '''
     def getDestinationFolder(self):
         return self._root_dir + "/"
-
+    '''
 
 
     def load_config(self, config_file):
@@ -52,6 +64,8 @@ class BaseRefData():
             except Exception as msg:
                 print("Could not load configuration file: %s" % os.path.abspath(config_file))
                 print("Current working script is: %s" % os.path.abspath(__file__))
+
+        logging.info("RDM's configuration file was successfully loaded. File name: {}".format(config_file))
 
         return config
 
@@ -67,7 +81,7 @@ class BaseRefData():
                 if chunk:
                     f.write(chunk)
 
-        logging.info("Downloaded a file: {}".format(local_file_name))
+        logging.info("File downloaded: {}".format(local_file_name))
         return local_file_name
 
     def unzip_file(self):
@@ -75,16 +89,22 @@ class BaseRefData():
 
     def delete_file(self, full_file_name):
         os.remove(full_file_name)
+        logging.info("File deleted: {}".format(full_file_name))
+
 
     def write_readme(self, download_url, files, comment=''):
-        file_name = self.getDestinationFolder() + self._config['readme_file']
-        print("Readme file: " + file_name)
+        file_name = self.destination_dir + self.config['readme_file']
+        print("Readme file: {}\n".format(file_name))
         with open(file_name, 'w') as f:
-            f.write("About: this an automatically generated description file for the data located in this folder.")
+            f.write("About: this an automatically generated description file for the data located in this folder.\n")
             if comment:
-                f.write(comment)
+                f.write("{}\n".format(comment))
             # now.strftime("%Y-%m-%d %H:%M")
-            f.write("Downloaded on: {}".format(datetime.datetime.now()))
-            f.write("Downloaded from: {}".format(download_url))
-            f.write("List of downloaded files: ")
-            f.write(files)
+            f.write("Downloaded on: {}\n".format(datetime.datetime.now()))
+            f.write("Downloaded from: {}\n".format(download_url))
+            f.write("List of downloaded files: \n")
+            for file in files:
+                f.write("{}\n".format(file))
+
+        logging.info("Finished writing an application README file: {}".format(file_name))
+

@@ -10,23 +10,11 @@ class TestNcbiData(unittest.TestCase):
 
 
     def tearDown(self):
-        #shutil.rmtree(self.fixture.getDestinationFolder())
-        pass
+        if os.path.exists(self.fixture.destination_dir):
+            shutil.rmtree(self.fixture.destination_dir)
 
 
-    def test_download_refseq_genomes(self):
+    def test_getProperties(self):
+        expected_dir = os.path.abspath('../out/test/ncbi/') + '/'
+        self.assertEqual(self.fixture.destination_dir, expected_dir)
 
-        ncbiUpdateFrequency = self.fixture.getUpdateFrequency()
-        self.assertTrue(ncbiUpdateFrequency == 30, "Expecting 30.")
-
-        destination_folder = self.fixture.getDestinationFolder()
-        self.assertEqual(destination_folder, '../out/test/ncbi/')
-
-
-    def testDownloadBlastDB(self):
-        readme_file = self.fixture.getDestinationFolder() + "README+"
-        print(readme_file)
-
-        self.fixture.downloadBlastDB()
-
-        self.assertTrue(os.path.isfile(readme_file), "README+ file should be created with the download.")

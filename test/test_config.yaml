@@ -4,18 +4,15 @@ root_folder: "../out/test/"
 readme_file: "README+"
 
 ncbi:
-    update_frequency: 30   # default for ncbi
     destination_folder: "ncbi/"
+
     blast_db:
-        update_frequency: 60  # specific for blast db (ncbi nr/nt)
-        ftp: "ftp://ftp.ncbi.nlm.nih.gov/blast/db/"
+        ftp: "ftp.ncbi.nlm.nih.gov"
+        ftp_dir: "blast/db/"
         destination_folder: "blast/"
 
 
-
-http_connect:
-    debug_level: 0 # 0 - No output, 1 - Output to stderr
-
+## Keep below structure - this format is expected by python's logging module
 logging:
 
     version: 1
