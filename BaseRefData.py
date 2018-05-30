@@ -108,3 +108,7 @@ class BaseRefData():
 
         logging.info("Finished writing an application README file: {}".format(file_name))
 
+    def parse_readme(self):
+        # This one is for getting a list of files, recorded at the update/download time
+        # Will be used in the restore backup
+        pass

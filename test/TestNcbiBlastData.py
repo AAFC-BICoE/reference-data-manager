@@ -21,3 +21,6 @@ class TestNcbiData(unittest.TestCase):
         self.fixture.download()
 
         self.assertTrue(os.path.isfile(readme_file), "README+ file should be created with the download.")
+
+        ncbi_readme = self.fixture.destination_dir + 'README'
+        self.assertTrue(os.path.isfile(ncbi_readme), "NCBI README file is not found in the download directory.")
