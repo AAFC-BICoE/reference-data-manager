@@ -7,9 +7,12 @@ ncbi:
     destination_folder: "ncbi/"
 
     blast_db:
+        destination_folder: "blast/"
         ftp: "ftp.ncbi.nlm.nih.gov"
         ftp_dir: "blast/db/"
-        destination_folder: "blast/"
+        user: "anonymous"
+        password: "anonymous"
+        info_file_name: "README"
 
 
 ## Keep below structure - this format is expected by python's logging module

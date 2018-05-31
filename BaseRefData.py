@@ -3,6 +3,7 @@ import requests
 import os
 import logging.config
 import datetime
+import hashlib
 
 
 class BaseRefData():
@@ -112,3 +113,11 @@ class BaseRefData():
         # This one is for getting a list of files, recorded at the update/download time
         # Will be used in the restore backup
         pass
+
+
+    def check_md5(self, file_name, md5_check):
+        with open(file_name, 'rb') as file:
+            file_data = file.read()
+            md5_real = hashlib.md5(file_data).hexdigest()
+
+        return md5_check == md5_real
