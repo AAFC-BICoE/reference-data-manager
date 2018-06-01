@@ -140,6 +140,47 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         return True
 
 
+    def ncbi_ftp_connect(self):
+        try:
+            ftp = ftplib.FTP(self._download_ftp)
+            ftp.login(user=self._ncbi_user, passwd=self._ncbi_passw)
+            ftp.cwd(self._ftp_dir)
+        except IOError as e:
+            print('Error connecting to NCBI ftp: {}'.format(e))
+        except ftplib.error_perm as e:
+            print("FTP error. {}".format(e))
+            ftp.quit()
+
+        return ftp
+
+
+    def download_ftp_file(self, file_name, ftp):
+        #TODO: move to properties
+        max_download_attempts = 3
+        ftp_file_size = ftp.size(file_name)
+        with open('out/' + file_name, 'wb') as f:
+            while ftp_file_size != f.tell():
+                try:
+                    print('Original ftp file size:     {}'.format(ftp.size(file_name)))
+                    if f.tell() != 0:
+                        ftp.retrbinary('RETR {}'.format(file_name), f.write, f.tell())
+                    else:
+                        ftp.retrbinary('RETR {}'.format(file_name), f.write)
+                    print('Downloaded local file size: {}'.format(f.tell()))
+                except (ftplib.error_temp, IOError) as e:
+                    print('Problems with ftp connection. Error: {}'.format(e))
+                    if max_download_attempts != 0:
+                        print('Re-trying the download of file: {}'.format(file_name))
+                        ftp = self.ncbi_ftp_connect()
+                        max_download_attempts -= 1
+                    else:
+                        print('Failed to download file: {}'.format(file_name))
+                        break
+                except:
+                    print(
+                        'Something went wrong with the download of file: {} Re-download will not be attempted.'.format(
+                            file_name))
+
 
 
 
