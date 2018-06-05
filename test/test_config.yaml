@@ -2,6 +2,8 @@
 default_update_frequency: 15
 root_folder: "../out/test/"
 readme_file: "README+"
+download_retry_num: 3
+connection_retry_num: 3
 
 ncbi:
     destination_folder: "ncbi/"

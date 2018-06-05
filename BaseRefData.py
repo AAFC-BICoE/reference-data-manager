@@ -9,9 +9,10 @@ import hashlib
 class BaseRefData():
 
     def __init__(self, config_file):
+        #print('In NcbiData. config file: {}'.format(os.path.abspath(config_file)))
         self.config = self.load_config(config_file)
         # TODO: Check if config was loaded
-        logging.config.dictConfig(self._config['logging'])
+        logging.config.dictConfig(self.config['logging'])
 
         #logging.critical("RDM application has started. Log file is here: {}.".format(self._config['logging']['handlers']['file']['filename']))
 
@@ -19,10 +20,11 @@ class BaseRefData():
         if not os.path.exists(self.destination_dir):
             os.makedirs(self.destination_dir)
 
-        #self._root_dir = os.path.abspath(self._config['root_folder'])
-        #if not os.path.exists(self._root_dir):
-        #    os.makedirs(self._root_dir)
-        #TODO: catch all exceptions
+        #TODO: catch all exceptions (no/wrong config file, can't create a home dir, etc.)
+
+        self.download_retry_num = self.config['download_retry_num']
+        self.connection_retry_num = self.config['connection_retry_num']
+
 
 
     @property
@@ -41,13 +43,21 @@ class BaseRefData():
     def destination_dir(self, value):
         self._destination_dir = value
 
+    @property
+    def download_retry_num(self):
+        return self._download_retry_num
 
-    def getUpdateFrequency(self):
-        raise NotImplementedError('Need to define getUpdateFrequency method to use this base class.')
+    @download_retry_num.setter
+    def download_retry_num(self, value):
+        self._download_retry_num = value
 
+    @property
+    def connection_retry_num(self):
+        return self._connection_retry_num
 
-    def getDownloadUrl(self):
-        raise NotImplementedError('Need to define getDownloadUrl method to use this base class.')
+    @connection_retry_num.setter
+    def connection_retry_num(self, value):
+        self._connection_retry_num = value
 
     '''
     def getDestinationFolder(self):
@@ -57,14 +67,19 @@ class BaseRefData():
 
     def load_config(self, config_file):
 
-        with open(config_file, 'r') as stream:
-            try:
+        try:
+            with open(config_file, 'r') as stream:
                 config = yaml.load(stream)
-            except yaml.YAMLError as exc:
-                print("Error in configuration file:", exc)
-            except Exception as msg:
-                print("Could not load configuration file: %s" % os.path.abspath(config_file))
-                print("Current working script is: %s" % os.path.abspath(__file__))
+
+        except yaml.YAMLError as e:
+            print("Could not load configuration file. RDM will not run. Error: {}".format(e))
+            exit(1)
+        except FileNotFoundError as e:
+            print("Configuration file {} could not be found. RDM will not run. Error: {}".format(config_file, e))
+            exit(1)
+        except Exception as msg:
+            print("Error while loading configuration file {}. RDM will not run. Error: {}".format(config_file))
+            exit(1)
 
         logging.info("RDM's configuration file was successfully loaded. File name: {}".format(config_file))
 
