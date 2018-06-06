@@ -136,3 +136,4 @@ class BaseRefData():
             md5_real = hashlib.md5(file_data).hexdigest()
 
         return md5_check == md5_real
+

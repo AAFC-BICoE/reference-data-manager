@@ -4,7 +4,7 @@ import abc
 class RefDataInterface(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
-    def testConnection(self):
+    def test_connection(self):
         raise NotImplementedError('Need to define testConnection method to use this base class.')
 
     @abc.abstractmethod

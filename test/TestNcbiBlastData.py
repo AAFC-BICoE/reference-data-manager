@@ -17,26 +17,29 @@ class TestNcbiData(unittest.TestCase):
     def tearDownClass(self):
         if os.path.exists(self.fixture.destination_dir):
             shutil.rmtree(self.fixture.destination_dir)
-
+        pass
 
 
     def test_testConnection(self):
         self.assertTrue(self.fixture.test_connection(), 'Could not connect to NCBI ftp: {}'.format(self.fixture._download_ftp))
 
-    '''
+
     def testDownload(self):
-        readme_file = self.fixture.destination_dir + "README+"
-        print(readme_file)
 
-        self.fixture.download(test_repeats=2)
+        success = self.fixture.download(test_repeats=2)
 
-        self.assertTrue(os.path.isfile(readme_file), "README+ file should be created with the download.")
+        self.assertTrue(success, "NCBI download did not return True.")
 
         ncbi_readme = self.fixture.destination_dir + 'README'
         self.assertTrue(os.path.isfile(ncbi_readme), "NCBI README file is not found in the download directory.")
 
-    
+        readme_file = self.fixture.destination_dir + "README+"
+        self.assertTrue(os.path.isfile(readme_file), "RDM's's README+ file is not found in the download directory.")
 
+        # Check few first files
+        self.assertTrue(os.path.isfile(self.fixture.destination_dir + 'nr.00.tar.gz'), "One of the expected ncbi blast files is not found in the download directory.")
+
+    '''
     def test_download_blast_file(self):
         # Small files to test with: nr.80, nt.53
         # Large files: nt.03, nr.05, nt.23

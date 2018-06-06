@@ -32,9 +32,24 @@ class NcbiData(BaseRefData, RefDataInterface):
         return super(NcbiData, self).getDestinationFolder() + self.config['ncbi']['destination_folder']
     '''
 
-    def testConnection(self):
-        logging.info("Testing connection to NCBI... Nothing to do.")
-        pass
+    def test_connection(self):
+        connection_successful = False
+
+        try:
+            ftp = ftplib.FTP(self._download_ftp)
+            ftp.login(user=self._ncbi_user, passwd=self._ncbi_passw)
+
+            response = ftp.voidcmd('NOOP')
+
+            if response == '200 NOOP command successful':
+                connection_successful = True
+
+            ftp.quit()
+        except:
+            return False
+
+        return connection_successful
+
 
     def download(self):
         logging.info("Downloading all of NCBI reference data ... Nothing to do.")

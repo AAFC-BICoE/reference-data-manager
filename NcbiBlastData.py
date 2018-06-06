@@ -22,6 +22,10 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             os.makedirs(self.destination_dir)
         os.chdir(self.destination_dir)
 
+        # directory to do an intermediary download
+        self.temp_dir = self.destination_dir + 'temp'
+        if not os.path.exists(self.temp_dir):
+            os.makedirs(self.temp_dir)
 
 
     @property
@@ -72,6 +76,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
         return connection_successful
 
+
     def test_existing_connection(self, ftp):
         connection_successful = False
         try:
@@ -85,12 +90,15 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
         return connection_successful
 
+
     def update(self):
         pass
+
 
     def backup(self):
         # 2018.05.28: As agreed upon, this feature will not be implemented.
         pass
+
 
     def restore(self):
         # 2018.05.28: As agreed upon, this feature will not be implemented.
@@ -104,20 +112,20 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         #TODO: Check time, and if it is not after hours for ncbi, give a warning
         # Check out warning.warn(): https://docs.python.org/3/library/warnings.html#warnings.warn
 
-        if not self.testConnection():
+        if not self.test_connection():
             logging.critical(
                 'Problems connecting to NCBI ftp {}. Download of NCBI BLAST nr/nt databases will not proceed.'.format(
                 self._download_ftp
             ))
             return False
 
+        ftp = self.ftp_connect()
+
+        if not ftp:
+            logging.error("Could not connect to NCBI ftp {}. Download will not continue.")
+            return False
 
         try:
-            ftp = ftplib.FTP(self._download_ftp)
-            ftp.login(user=self._ncbi_user, passwd=self._ncbi_passw)
-            ftp.cwd(self._ftp_dir)
-
-
             # Get list of files to download
             all_files = ftp.nlst()
 
@@ -130,15 +138,25 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             self.write_readme(download_url='{}/{}'.format(self._download_ftp, self._ftp_dir), files=nr_nt_files,
                               comment=comment)
 
+            print("Info file: {}".format(self._info_file_name))
+            #self.download_ftp_file(self._info_file_name, ftp)
             with open(self._info_file_name, 'wb') as f:
                 ftp.retrbinary('RETR {}'.format(self._info_file_name), f.write, 1024)
 
-            self.download_blast_file(nr_nt_files[0], ftp)
+            if test_repeats == 0:
+                test_repeats = len(nr_nt_files) + 2
+            for file in nr_nt_files:
+                if test_repeats > 0:
+                    self.download_blast_file(file, ftp)
+                    test_repeats -= 1
 
             ftp.quit()
-        except:
-            logging.exception("Exception when trying to download blast database from NCBI.")
+        except Exception as e:
+            logging.exception("Exception when trying to download blast database from NCBI. Error: {}".format(e))
             ftp.quit()
+            return False
+
+        return True
 
 
 
@@ -151,17 +169,23 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             ftp_link.retrbinary('RETR {}'.format(md5_file), md5_data.append)
 
         except ftplib.error_perm as e:
-            logging.error("Can't download {} file from NCBI. Returned error: {}".format(short_file_name, e))
-            ## Retry?
+            logging.error("Can't download {} file from NCBI. Returned error: {}. \n Download will not continue".format(short_file_name, e))
+            return False
 
         md5_str = md5_data[0].decode("utf-8") .split(' ')[0]
 
-        with open(short_file_name, 'wb') as f:
-            ftp_link.retrbinary('RETR {}'.format(short_file_name), f.write, 1024)
+        success = self.download_ftp_file(short_file_name, ftp_link)
 
-        if not self.check_md5(self.destination_dir + short_file_name, md5_str):
-            # Delete and re-download the file?
-            pass
+        if not success:
+            return False
+
+        if not self.check_md5(short_file_name, md5_str):
+            logging.warning("MD5 check did not pass. Attempting re-downloading again.")
+            os.remove(short_file_name)
+            success = self.download_ftp_file(short_file_name, ftp_link)
+            if not success or not self.check_md5(short_file_name, md5_str):
+                logging.error("MD5 check did not pass. The file will be destroyed.")
+                return False
 
         return True
 
@@ -184,17 +208,17 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                 ))
                 return False
 
-            print('Original ftp file size:   {}'.format(ftp_connection.size(file_name)))
+            #print('Original ftp file size:   {}'.format(ftp_connection.size(file_name)))
 
             with open(file_name, 'wb') as file_obj:
                 while ftp_file_size != file_obj.tell():
                     try:
                         if file_obj.tell() != 0:
-                            print('Downloaded local file size before re-try: {}'.format(file_obj.tell()))
+                            #print('Downloaded local file size before re-try: {}'.format(file_obj.tell()))
                             ftp_connection.retrbinary('RETR {}'.format(file_name), file_obj.write, rest=file_obj.tell())
                         else:
                             ftp_connection.retrbinary('RETR {}'.format(file_name), file_obj.write)
-                            print('Downloaded local file size at end: {}'.format(file_obj.tell()))
+                            #print('Downloaded local file size at end: {}'.format(file_obj.tell()))
                     except (ftplib.error_temp, IOError) as e:
                         print('Problems with ftp connection. Error: {}'.format(e))
                         logging.warning('Problems with ftp connection. Error: {}'.format(e))
@@ -208,21 +232,21 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                                 logging.error("Connection could not be established.")
                                 return False
                         else:
-                            print('Failed to download file: {}'.format(file_name))
                             logging.error('Failed to download file: {}'.format(file_name))
                             return False
                     except:
-                        print(
+                        logging.exception(
                             'Something went wrong with the download of file: {} Re-download will not be attempted.'.format(
                                 file_name))
                         os.remove(file_name)
                         return False
 
-                print('Downloaded file: {}'.format(self.destination_dir+file_name))
+                #print('Downloaded file: {}'.format(self.destination_dir+file_name))
                 if ftp_file_size == file_obj.tell():
                     download_success = True
                 else:
-                    #os.remove(file_name)
-                    pass
+                    logging.error("Downloaded file size does not match it's size on FTP server. The file will be deleted.")
+                    os.remove(file_name)
+
 
         return download_success
