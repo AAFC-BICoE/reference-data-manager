@@ -26,7 +26,7 @@ class TestNcbiData(unittest.TestCase):
 
     def testDownload(self):
 
-        success = self.fixture.download(test_repeats=2)
+        success = self.fixture.download(test_repeats=1)
 
         self.assertTrue(success, "NCBI download did not return True.")
 
@@ -36,8 +36,27 @@ class TestNcbiData(unittest.TestCase):
         readme_file = self.fixture.destination_dir + "README+"
         self.assertTrue(os.path.isfile(readme_file), "RDM's's README+ file is not found in the download directory.")
 
+
         # Check few first files
-        self.assertTrue(os.path.isfile(self.fixture.destination_dir + 'nr.00.tar.gz'), "One of the expected ncbi blast files is not found in the download directory.")
+        #self.assertTrue(os.path.isfile(self.fixture.destination_dir + 'nr.00.tar.gz'), "One of the expected ncbi blast files is not found in the download directory.")
+        self.assertTrue(os.path.isfile(self.fixture.destination_dir + 'nr.00.phd'),
+                        "Unarchived ncbi blast file was not found.")
+        self.assertTrue(os.path.isfile(self.fixture.destination_dir + 'nr.00.phr'),
+                        "Unarchived ncbi blast file was not found.")
+        self.assertTrue(os.path.isfile(self.fixture.destination_dir + 'nr.00.psq'),
+                        "Unarchived ncbi blast file was not found.")
+        self.assertTrue(os.path.isfile(self.fixture.destination_dir + 'nr.pal'),
+                        "Unarchived ncbi blast file was not found.")
+        self.assertTrue(os.path.isfile(self.fixture.destination_dir + 'taxdb.btd'),
+                        "Unarchived ncbi blast file was not found.")
+        self.assertTrue(os.path.isfile(self.fixture.destination_dir + 'taxdb.bti'),
+                        "Unarchived ncbi blast file was not found.")
+
+        # files that shouldn't be there
+        self.assertFalse(os.path.isfile(self.fixture.destination_dir + 'nr.00.tar.gz.md5'),
+                        "md5 file should have been removed.")
+        self.assertFalse(os.path.isfile(self.fixture.destination_dir + 'nr.00.tar.gz'),
+                        "tar.gz file should have been removed.")
 
     '''
     def test_download_blast_file(self):

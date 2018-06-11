@@ -4,6 +4,7 @@ import os
 import ftplib
 import re
 import logging.config
+import tarfile
 
 class NcbiBlastData(NcbiData, RefDataInterface):
 
@@ -112,18 +113,24 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         #TODO: Check time, and if it is not after hours for ncbi, give a warning
         # Check out warning.warn(): https://docs.python.org/3/library/warnings.html#warnings.warn
 
+
+
+        '''  # Not needed, since connect does a re-try
         if not self.test_connection():
             logging.critical(
                 'Problems connecting to NCBI ftp {}. Download of NCBI BLAST nr/nt databases will not proceed.'.format(
                 self._download_ftp
             ))
             return False
+        '''
 
         ftp = self.ftp_connect()
 
         if not ftp:
             logging.error("Could not connect to NCBI ftp {}. Download will not continue.")
             return False
+
+        ### Download
 
         try:
             # Get list of files to download
@@ -143,27 +150,50 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             with open(self._info_file_name, 'wb') as f:
                 ftp.retrbinary('RETR {}'.format(self._info_file_name), f.write, 1024)
 
+            files_download_failed = []
             if test_repeats == 0:
                 test_repeats = len(nr_nt_files) + 2
             for file in nr_nt_files:
                 if test_repeats > 0:
-                    self.download_blast_file(file, ftp)
                     test_repeats -= 1
+
+                    downloaded = self.download_blast_file(file, ftp)
+
+                    unzipped = False
+                    if downloaded:
+                        unzipped = self.unzip_file(file)
+
+                    if unzipped:
+                        os.remove(file)
+                    else:
+                        files_download_failed.append(file)
+
+
+                else:
+                    break
+
 
             ftp.quit()
         except Exception as e:
-            logging.exception("Exception when trying to download blast database from NCBI. Error: {}".format(e))
-            ftp.quit()
+            logging.exception("Exception when trying to download and extract blast database from NCBI. Error: {}".format(e))
+            try:
+                ftp.quit()
+            except:
+                pass  # If connection was dead at this point, then it's fine
+
             return False
+
+        if files_download_failed:
+            logging.info("Following files failed to be downloaded and/or un-archived: {}".format(files_download_failed))
 
         return True
 
 
 
-
+    # Downloads a file and its corresponding .md5 file. Checks if md5 match.
     def download_blast_file(self, short_file_name, ftp_link):
         md5_file = '{}.md5'.format(short_file_name)
-
+        '''
         md5_data = []
         try:
             ftp_link.retrbinary('RETR {}'.format(md5_file), md5_data.append)
@@ -171,8 +201,25 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         except ftplib.error_perm as e:
             logging.error("Can't download {} file from NCBI. Returned error: {}. \n Download will not continue".format(short_file_name, e))
             return False
-
+        
         md5_str = md5_data[0].decode("utf-8") .split(' ')[0]
+        '''
+
+        success = self.download_ftp_file(md5_file, ftp_link)
+
+        if not success:
+            return False
+
+
+        try:
+            with open(md5_file, 'r') as f:
+                md5_file_contents = f.read()
+            md5_str = md5_file_contents.split(' ')[0]
+            print('md5: {}'.format(md5_str))
+            os.remove(md5_file)
+        except Exception as e:
+            logging.exception('Could not download or read MD5 file for file {}. Download of this file will not proceed.'.format(short_file_name))
+            return False
 
         success = self.download_ftp_file(short_file_name, ftp_link)
 
@@ -184,7 +231,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             os.remove(short_file_name)
             success = self.download_ftp_file(short_file_name, ftp_link)
             if not success or not self.check_md5(short_file_name, md5_str):
-                logging.error("MD5 check did not pass. The file will be destroyed.")
+                logging.error("MD5 check did not pass. The file {} will be destroyed.".format(short_file_name))
                 return False
 
         return True
@@ -250,3 +297,18 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
 
         return download_success
+
+
+
+    def unzip_file(self, filename):
+
+        try:
+            if (filename.endswith("tar.gz")):
+                tar = tarfile.open(filename, "r:gz")
+                tar.extractall()
+                tar.close()
+        except Exception as e:
+            logging.exception("Failed to exctract file {}. Error: {}".format(filename, e))
+            return False
+
+        return True
