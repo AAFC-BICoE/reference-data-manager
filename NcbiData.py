@@ -15,6 +15,10 @@ class NcbiData(BaseRefData, RefDataInterface):
             os.makedirs(self.destination_dir)
         os.chdir(self.destination_dir)
 
+        self.backup_dir = super(NcbiData, self).backup_dir + self.config['ncbi']['destination_folder']
+        if not os.path.exists(self.backup_dir):
+            os.makedirs(self.backup_dir)
+
 
     @property
     def destination_dir(self):
@@ -23,6 +27,14 @@ class NcbiData(BaseRefData, RefDataInterface):
     @destination_dir.setter
     def destination_dir(self, value):
         self._destination_dir = value
+
+    @property
+    def backup_dir(self):
+        return self._backup_dir
+
+    @backup_dir.setter
+    def backup_dir(self, value):
+        self._backup_dir = value
 
 
     def getDownloadUrl(self):

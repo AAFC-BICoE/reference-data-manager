@@ -1,6 +1,6 @@
 from NcbiData import NcbiData
 from RefDataInterface import RefDataInterface
-import os
+import os, shutil
 import ftplib
 import re
 import logging.config
@@ -24,10 +24,10 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             os.makedirs(self.destination_dir)
         os.chdir(self.destination_dir)
 
-        # directory to do an intermediary download
-        self.temp_dir = self.destination_dir + 'temp'
-        if not os.path.exists(self.temp_dir):
-            os.makedirs(self.temp_dir)
+        self.backup_dir = super(NcbiBlastData, self).backup_dir + self.config['ncbi']['blast_db'][
+            'destination_folder']
+        if not os.path.exists(self.backup_dir):
+            os.makedirs(self.backup_dir)
 
 
     @property
@@ -37,6 +37,15 @@ class NcbiBlastData(NcbiData, RefDataInterface):
     @destination_dir.setter
     def destination_dir(self, value):
         self._destination_dir = value
+
+
+    @property
+    def backup_dir(self):
+        return self._backup_dir
+
+    @backup_dir.setter
+    def backup_dir(self, value):
+        self._backup_dir = value
 
 
     # re-tries ftp connection. Returns connection handler or 0
@@ -94,13 +103,57 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
 
     def update(self):
+        # directory to do an intermediary download
+        self.temp_dir = self.destination_dir + 'temp'
+        if not os.path.exists(self.temp_dir):
+            os.makedirs(self.temp_dir)
+
+        # Download and unzip into an intermediate folder
+        os.chdir(self.temp_dir)
+        success = self.download()
+
+        if not success:
+            logging.error("Download failed. Update will not proceed.")
+            return False
+
+        self.backup()
+
+
+        # Delete all data from the destination folder
+        # Copy data from intermediate folder to destination folder
+        # Delete intermediate folder
         pass
 
 
     def backup(self):
-        # 2018.05.28: As agreed upon, this feature will not be implemented.
-        pass
+        # We will not keep a full copy of the directory
+        #shutil.copytree(self.destination_dir, self.backup_dir)
 
+        ### TODO: Generate a dated backup folder
+
+        # Copy only README files for future reference
+        app_readme_file = self.config['readme_file']
+        ncbi_readme_file = self._info_file_name
+        all_files = os.listdir(self.destination_dir)
+        if app_readme_file in all_files:
+            shutil.copy2(app_readme_file, self.backup_dir)
+        else:
+            logging.info("{} file could not be backed-up because it is not found.".format(app_readme_file))
+
+        if ncbi_readme_file in all_files:
+            shutil.copy2(ncbi_readme_file, self.backup_dir)
+        else:
+            logging.info("{} file could not be backed-up because it is not found.".format(app_readme_file))
+
+    # Deletes all blast database files. Directory structure will be preserved.
+    def delete(self):
+        all_files = os.listdir(self.destination_dir)
+
+        for file in all_files:
+            if os.path.isfile(file):
+                print("File")
+            else:
+                print("DIr")
 
     def restore(self):
         # 2018.05.28: As agreed upon, this feature will not be implemented.
@@ -292,7 +345,6 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                         os.remove(file_name)
                         return False
 
-                #print('Downloaded file: {}'.format(self.destination_dir+file_name))
                 if ftp_file_size == file_obj.tell():
                     download_success = True
                 else:

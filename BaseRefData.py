@@ -22,6 +22,10 @@ class BaseRefData():
         if not os.path.exists(self.destination_dir):
             os.makedirs(self.destination_dir)
 
+        self.backup_dir = os.path.abspath(self._config['backup_folder']) + '/'
+        if not os.path.exists(self.backup_dir):
+            os.makedirs(self.backup_dir)
+
         #TODO: catch all exceptions (no/wrong config file, can't create a home dir, etc.)
 
         self.download_retry_num = self.config['download_retry_num']
@@ -44,6 +48,14 @@ class BaseRefData():
     @destination_dir.setter
     def destination_dir(self, value):
         self._destination_dir = value
+
+    @property
+    def backup_dir(self):
+        return self._backup_dir
+
+    @backup_dir.setter
+    def backup_dir(self, value):
+        self._backup_dir = value
 
     @property
     def download_retry_num(self):
@@ -112,7 +124,7 @@ class BaseRefData():
 
     def write_readme(self, download_url, downloaded_files, download_failed_files=[], comment='', execution_time=0):
         file_name = self.destination_dir + self.config['readme_file']
-        print("Readme file: {}\n".format(file_name))
+        #print("Readme file: {}\n".format(file_name))
         with open(file_name, 'w') as f:
             f.write("About: this an automatically generated description file for the data located in this folder.\n")
             if comment:

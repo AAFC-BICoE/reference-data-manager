@@ -10,13 +10,17 @@ class TestNcbiData(unittest.TestCase):
         #print('In TestNcbiBlastData. config file: {}'.format(os.path.abspath('test_config.yaml')))
         # get current working dir:
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        print(dir_path)
+        #print(dir_path)
         self.fixture = NcbiBlastData('{}/test_config.yaml'.format(dir_path))
 
     @classmethod
     def tearDownClass(self):
-        #if os.path.exists(self.fixture.destination_dir):
-        #    shutil.rmtree(self.fixture.destination_dir)
+
+        if os.path.exists(self.fixture.destination_dir):
+            shutil.rmtree(self.fixture.destination_dir)
+        if os.path.exists(self.fixture.backup_dir):
+            shutil.rmtree(self.fixture.backup_dir)
+
         pass
 
 
@@ -27,7 +31,7 @@ class TestNcbiData(unittest.TestCase):
     def testDownload(self):
 
         #success = self.fixture.download()
-        success = self.fixture.download(test_repeats=3)
+        success = self.fixture.download(test_repeats=1)
 
         self.assertTrue(success, "NCBI download did not return True.")
 
@@ -71,6 +75,12 @@ class TestNcbiData(unittest.TestCase):
         #self.assertTrue(os.path.isfile(self.fixture.destination_dir + file_name), "File was not downloaded.")
 
     '''
+
+    def test_backup(self):
+        self.fixture.download(test_repeats=1)
+        self.fixture.backup()
+        self.assertTrue(os.path.isfile(self.fixture.backup_dir + 'README'), "No README found.")
+        self.assertTrue(os.path.isfile(self.fixture.backup_dir + 'README+'), "No README+ found.")
 
     def test_download_ftp_file(self):
         # Small files to test with: nr.80, nt.53
