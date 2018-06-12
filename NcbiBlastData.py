@@ -5,6 +5,7 @@ import ftplib
 import re
 import logging.config
 import tarfile
+import time
 
 class NcbiBlastData(NcbiData, RefDataInterface):
 
@@ -109,6 +110,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
     # Download all nr / nt blast databases
     def download(self, test_repeats=0):
+        download_start_time = time.time()
 
         #TODO: Check time, and if it is not after hours for ncbi, give a warning
         # Check out warning.warn(): https://docs.python.org/3/library/warnings.html#warnings.warn
@@ -131,6 +133,8 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             return False
 
         ### Download
+        downloaded_files = []
+        files_download_failed = []
 
         try:
             # Get list of files to download
@@ -140,17 +144,12 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
             nr_nt_files = [file_name for file_name in all_files if nr_nt_re.match(file_name)]
 
-            # Write docs
-            comment = 'This is full blast database (all of nr / nt datasets) downloaded from NCBI.'
-            self.write_readme(download_url='{}/{}'.format(self._download_ftp, self._ftp_dir), files=nr_nt_files,
-                              comment=comment)
 
-            print("Info file: {}".format(self._info_file_name))
+            ### Download NCBI README file
             #self.download_ftp_file(self._info_file_name, ftp)
             with open(self._info_file_name, 'wb') as f:
                 ftp.retrbinary('RETR {}'.format(self._info_file_name), f.write, 1024)
 
-            files_download_failed = []
             if test_repeats == 0:
                 test_repeats = len(nr_nt_files) + 2
             for file in nr_nt_files:
@@ -161,6 +160,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
                     unzipped = False
                     if downloaded:
+                        downloaded_files.append(file)
                         unzipped = self.unzip_file(file)
 
                     if unzipped:
@@ -171,7 +171,6 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
                 else:
                     break
-
 
             ftp.quit()
         except Exception as e:
@@ -185,6 +184,12 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
         if files_download_failed:
             logging.info("Following files failed to be downloaded and/or un-archived: {}".format(files_download_failed))
+
+        # Write application's README+ file
+        comment = 'This is full blast database (all of nr / nt datasets) downloaded from NCBI.'
+        self.write_readme(download_url='{}/{}'.format(self._download_ftp, self._ftp_dir),
+                          downloaded_files=downloaded_files, download_failed_files=files_download_failed,
+                          comment=comment, execution_time=(time.time() - download_start_time))
 
         return True
 
@@ -215,7 +220,6 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             with open(md5_file, 'r') as f:
                 md5_file_contents = f.read()
             md5_str = md5_file_contents.split(' ')[0]
-            print('md5: {}'.format(md5_str))
             os.remove(md5_file)
         except Exception as e:
             logging.exception('Could not download or read MD5 file for file {}. Download of this file will not proceed.'.format(short_file_name))

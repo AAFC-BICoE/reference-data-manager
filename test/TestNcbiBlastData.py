@@ -15,8 +15,8 @@ class TestNcbiData(unittest.TestCase):
 
     @classmethod
     def tearDownClass(self):
-        if os.path.exists(self.fixture.destination_dir):
-            shutil.rmtree(self.fixture.destination_dir)
+        #if os.path.exists(self.fixture.destination_dir):
+        #    shutil.rmtree(self.fixture.destination_dir)
         pass
 
 
@@ -26,7 +26,8 @@ class TestNcbiData(unittest.TestCase):
 
     def testDownload(self):
 
-        success = self.fixture.download(test_repeats=1)
+        #success = self.fixture.download()
+        success = self.fixture.download(test_repeats=3)
 
         self.assertTrue(success, "NCBI download did not return True.")
 

@@ -4,6 +4,8 @@ import os
 import logging.config
 import datetime
 import hashlib
+from datetime import timedelta
+
 
 
 class BaseRefData():
@@ -108,7 +110,7 @@ class BaseRefData():
         logging.info("File deleted: {}".format(full_file_name))
 
 
-    def write_readme(self, download_url, files, comment=''):
+    def write_readme(self, download_url, downloaded_files, download_failed_files=[], comment='', execution_time=0):
         file_name = self.destination_dir + self.config['readme_file']
         print("Readme file: {}\n".format(file_name))
         with open(file_name, 'w') as f:
@@ -118,9 +120,17 @@ class BaseRefData():
             # now.strftime("%Y-%m-%d %H:%M")
             f.write("Downloaded on: {}\n".format(datetime.datetime.now()))
             f.write("Downloaded from: {}\n".format(download_url))
+            if execution_time:
+                msg = "Download time: {} secs \n".format(timedelta(seconds=round(execution_time)))
+                f.write(msg)
             f.write("List of downloaded files: \n")
-            for file in files:
+            for file in downloaded_files:
                 f.write("{}\n".format(file))
+
+            if download_failed_files:
+                f.write("List of files that failed to be downloaded: \n")
+                for file in download_failed_files:
+                    f.write("{}\n".format(file))
 
         logging.info("Finished writing an application README file: {}".format(file_name))
 

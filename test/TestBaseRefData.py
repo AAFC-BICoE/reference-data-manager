@@ -26,6 +26,6 @@ class TestNcbiData(unittest.TestCase):
         self.assertFalse(os.path.isfile(local_file), "Expecting file to be deleted")
 
     def test_write_readme(self):
-        self.fixture.write_readme(download_url='http://some/url', files=['file1','file2', 'file3'], comment='This is a comment string.')
+        self.fixture.write_readme(download_url='http://some/url', downloaded_files=['file1', 'file2', 'file3'], comment='This is a comment string.')
         expected_file_name = "{}{}".format(self.fixture.destination_dir, self.fixture.config['readme_file'])
         self.assertTrue(os.path.isfile(expected_file_name), "Expecting a readme file")
