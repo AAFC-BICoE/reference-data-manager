@@ -60,7 +60,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                 ftp.cwd(self._ftp_dir)
             except Exception as e:
                 print("Error connecting to FTP: {} Retrying...".format(e))
-                os.sleep(1)
+                time.sleep(1)
                 retry_num -= 1
 
         return ftp
@@ -129,21 +129,33 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         # We will not keep a full copy of the directory
         #shutil.copytree(self.destination_dir, self.backup_dir)
 
-        ### TODO: Generate a dated backup folder
+
+        backup_folder = self.create_backup_dir()
+        if not backup_folder:
+            logging.error("Backup did not succeed.")
+            return False
 
         # Copy only README files for future reference
         app_readme_file = self.config['readme_file']
         ncbi_readme_file = self._info_file_name
-        all_files = os.listdir(self.destination_dir)
-        if app_readme_file in all_files:
-            shutil.copy2(app_readme_file, self.backup_dir)
-        else:
-            logging.info("{} file could not be backed-up because it is not found.".format(app_readme_file))
+        try:
+            all_files = os.listdir(self.destination_dir)
 
-        if ncbi_readme_file in all_files:
-            shutil.copy2(ncbi_readme_file, self.backup_dir)
-        else:
-            logging.info("{} file could not be backed-up because it is not found.".format(app_readme_file))
+            if app_readme_file in all_files:
+                shutil.copy2(app_readme_file, backup_folder)
+            else:
+                logging.info("{} file could not be backed-up because it is not found.".format(app_readme_file))
+
+            if ncbi_readme_file in all_files:
+                shutil.copy2(ncbi_readme_file, backup_folder)
+            else:
+                logging.info("{} file could not be backed-up because it is not found.".format(app_readme_file))
+        except Exception as e:
+            logging.exception("Backup did not succeed. Error: {}".format(e))
+            return False
+
+        return backup_folder
+
 
     # Deletes all blast database files. Directory structure will be preserved.
     def delete(self):
@@ -329,7 +341,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                         if max_download_attempts != 0:
                             print('Re-trying the download of file: {}'.format(file_name))
                             logging.warning('Re-trying the download of file: {}'.format(file_name))
-                            os.sleep(1)  # sleep one second before re-trying
+                            time.sleep(1)  # sleep one second before re-trying
                             ftp_connection = self.ftp_connect()
                             max_download_attempts -= 1
                             if not ftp_connection:

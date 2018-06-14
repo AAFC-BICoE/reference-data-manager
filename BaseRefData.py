@@ -1,6 +1,6 @@
 import yaml
 import requests
-import os
+import os, shutil
 import logging.config
 import datetime
 import hashlib
@@ -159,3 +159,19 @@ class BaseRefData():
 
         return md5_check == md5_real
 
+
+    # All backup dirs are named as date: yyyy-mm-dd. They will be placed in appropriate sub-folder
+    def create_backup_dir(self):
+        short_dir_name = datetime.datetime.now().strftime('%Y-%m-%d')
+        full_dir_name = '{}{}'.format(self.backup_dir, short_dir_name)
+
+        try:
+            if os.path.exists(full_dir_name):
+                shutil.rmtree(full_dir_name)
+
+            os.makedirs(full_dir_name)
+        except:
+            logging.exception("Could not create a backup directory: {}".format(full_dir_name))
+            return False
+
+        return full_dir_name + '/'

@@ -77,10 +77,18 @@ class TestNcbiData(unittest.TestCase):
     '''
 
     def test_backup(self):
+        '''
+        # Test when there is nothing to backup
+        backup_folder = self.fixture.backup()
+        self.assertFalse(backup_folder)
+        '''
+
         self.fixture.download(test_repeats=1)
-        self.fixture.backup()
-        self.assertTrue(os.path.isfile(self.fixture.backup_dir + 'README'), "No README found.")
-        self.assertTrue(os.path.isfile(self.fixture.backup_dir + 'README+'), "No README+ found.")
+        backup_folder = self.fixture.backup()
+        self.assertTrue(backup_folder)
+        self.assertTrue(os.path.isfile(backup_folder + 'README'), "No README found.")
+        self.assertTrue(os.path.isfile(backup_folder + 'README+'), "No README+ found.")
+
 
     def test_download_ftp_file(self):
         # Small files to test with: nr.80, nt.53
