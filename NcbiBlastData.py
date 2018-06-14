@@ -103,22 +103,27 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
 
     def update(self):
+        logging.info("Running NCBI Blast update")
         # directory to do an intermediary download
-        self.temp_dir = self.destination_dir + 'temp'
+        temp_dir = self.destination_dir + 'temp'
         if not os.path.exists(self.temp_dir):
             os.makedirs(self.temp_dir)
 
         # Download and unzip into an intermediate folder
-        os.chdir(self.temp_dir)
-        success = self.download()
+        os.chdir(temp_dir)
+        success = self.download(test_repeats=1)
 
         if not success:
             logging.error("Download failed. Update will not proceed.")
             return False
 
-        self.backup()
+        backup_success = self.backup()
 
+        if not backup_success:
+            logging.error("Backup of reference data did not succeed. The update will not continue.")
+            return False
 
+        os.chdir(self.destination_dir)
         # Delete all data from the destination folder
         # Copy data from intermediate folder to destination folder
         # Delete intermediate folder

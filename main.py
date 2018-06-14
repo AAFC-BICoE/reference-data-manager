@@ -1,87 +1,49 @@
-'''
-Download, update and manage reference data for bioinformatics
+import sys
+import argparse
 
-Created on Jan 21, 2018
+from NcbiBlastData import NcbiBlastData
 
-@author: korolo
-'''
 
-# TODO:
-## Logging
-## README mechanizm
-## Backup mechanizm
+def parse_input_args(argv):
+    ''' Parses command line arguments '''
 
-import os
+    parser = argparse.ArgumentParser(description=
+            "Reference Data Manager (RDM) is used to download, update and backup bioinformatics reference data.")
+    parser.add_argument('--update-ncbi-blast', help="Update entire nr/nt Blast reference data from NCBI.", dest="ncbi_blast_update",
+                        action='store_true', required=False)
+    parser.add_argument('--update-ncbi-subsets', help="Update NCBI's subsets (ITS, CO1, etc.)", dest="ncbi_subsets_update",
+                        action = 'store_true', required=False)
 
-from NcbiDownload import NcbiDownload
+    args = parser.parse_args(argv)
 
-reference_start_dir = "out/reference"
-ncbi_wholegenomes_kingdoms = ["archaea", "bacteria", "fungi", "invertebrate"]
-#barcode_dirs = ["16S_Bacteria", "16S_Archea", "Fungi_ITS", "Insect_CO1"]
-barcode_db_dirs = ["16S_Bacteria/GreenGenes", "16S_Archea/GreenGenes", "Fungi_ITS/Unite", "Insect_CO1/ncbi"]
-# Move the taxonomy out to the same level as WholeGenome
-#ref_data_dirs = ['Taxonomy', 'Fasta', 'ToolDB']
-whole_genome_db_dirs = ['Fasta', 'ToolDB']
-barcodes_db_subdirs = ['Fasta', 'Taxonomy']
-taxonomy_formats = ['qiime', 'mothur']
+    if not (args.ncbi_blast_update or args.ncbi_subsets_update):
+        parser.error('No action requested. Please add one of the required actions.')
 
-# NCBI
-ncbi_ftp = "ftp://ftp.ncbi.nlm.nih.gov"
-ncbi_refseq_wholegenome_path = "/genomes/refseq/fungi/"
-ncbi_assembly_summary_file = "assembly_summary.txt"
+    return args
 
 
 
-def create_directory_structure(start_dir):
-    try:
-        ### Whole Genome
-        for k in ncbi_wholegenomes_kingdoms:
-            kingdom_dir = "{0}/WholeGenome/{1}".format(start_dir, k)
-            for d in whole_genome_db_dirs:
-                os.makedirs("{0}/ncbi/RefSeq/{1}".format(kingdom_dir, d), exist_ok=True)
-                os.makedirs("{0}/ncbi/GenBank/{1}".format(kingdom_dir, d), exist_ok=True)
-            os.makedirs("{0}/WholeGenome/ToolDB/Humann".format(start_dir), exist_ok=True)
-            os.makedirs("{0}/WholeGenome/ToolDB/Metamos".format(start_dir), exist_ok=True)
-            os.makedirs("{0}/WholeGenome/ToolDB/Kraken".format(start_dir), exist_ok=True)
+def execute_script(input_args):
 
-        ### Barcodes
-        for k in barcode_db_dirs:
-            barcode_dir = "{0}/DNA_Barcodes/{1}".format(start_dir, k)
-            for d in barcodes_db_subdirs:
-                os.makedirs("{0}/{1}".format(barcode_dir, d), exist_ok=True)
+    config_file = "config/config.yaml"
+    parsed_args = parse_input_args(input_args)
 
 
-        ### Taxonomy
-        for k in taxonomy_formats:
-            taxonomy_dir = "{0}/Taxonomy/ncbi/ToolFormats/{1}".format(start_dir, k)
-            os.makedirs(taxonomy_dir, exist_ok=True)
+    if parsed_args.ncbi_blast_update:
+        print("Running NCBI Blast update")
+        blastData = NcbiBlastData(config_file)
+        #success = blastData.test_connection()
+        success = blastData.update()
+        if success:
+            print("NCBI Blast reference data were updated successfully. It is located at: {}".format(
+                blastData.destination_dir
+            ))
+    if parsed_args.ncbi_subsets_update:
+        print("Subsets update: not yet implemented.")
 
-        ### Protein
-        # If we want proteins in the future, they should be at this level:
-        #os.makedirs("{0}/Protein".format(start_dir), exist_ok=True)
-        # refseq_protein database
-        os.makedirs("{0}/Protein/ncbi/RefSeq/".format(start_dir), exist_ok=True)
-        os.makedirs("{0}/Protein/ToolDB/Humann/".format(start_dir), exist_ok=True)
-
-        ### Everything
-        os.makedirs("{0}/ncbi_nr_nt".format(start_dir), exist_ok=True)
-
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
-
-def download_ncbi_whole_genome():
-    downloadObj = NcbiDownload()
-    for k in ncbi_wholegenomes_kingdoms:
-        local_dir = "{0}/WholeGenome/{1}/ncbi/RefSeq/Fasta".format(reference_start_dir, k)
-        downloadObj.download_refseq_genomes(k,local_dir)
-
-        local_dir = "{0}/WholeGenome/{1}/ncbi/GenBank/Fasta".format(reference_start_dir, k)
-        #downloadObj.download_genbank_genomes(k,local_dir)
 
 def main():
-    create_directory_structure(reference_start_dir)
-    #download_ncbi_whole_genome()
+    execute_script(sys.argv[1:])
 
 if __name__ == "__main__":
     main()
