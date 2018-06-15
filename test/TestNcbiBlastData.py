@@ -15,12 +15,12 @@ class TestNcbiData(unittest.TestCase):
 
     @classmethod
     def tearDownClass(self):
-
+        '''
         if os.path.exists(self.fixture.destination_dir):
             shutil.rmtree(self.fixture.destination_dir)
         if os.path.exists(self.fixture.backup_dir):
             shutil.rmtree(self.fixture.backup_dir)
-
+        '''
         pass
 
 
@@ -62,6 +62,12 @@ class TestNcbiData(unittest.TestCase):
                         "md5 file should have been removed.")
         self.assertFalse(os.path.isfile(self.fixture.destination_dir + 'nr.00.tar.gz'),
                         "tar.gz file should have been removed.")
+
+    def test_update(self):
+        success = self.fixture.update()
+
+        self.assertTrue(success, "NCBI update did not return True.")
+        
 
     '''
     def test_download_blast_file(self):

@@ -123,11 +123,17 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             logging.error("Backup of reference data did not succeed. The update will not continue.")
             return False
 
-        os.chdir(self.destination_dir)
+
         # Delete all data from the destination folder
+        os.chdir(self.destination_dir)
+        only_files = [f for f in os.listdir('.') if os.path.isfile(f)]
+        for f in only_files:
+            os.remove(f)
+
         # Copy data from intermediate folder to destination folder
+        shutil.copytree(temp_dir, self.destination_dir)
         # Delete intermediate folder
-        pass
+        shutil.rmtree(temp_dir)
 
 
     def backup(self):
@@ -185,16 +191,6 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         #TODO: Check time, and if it is not after hours for ncbi, give a warning
         # Check out warning.warn(): https://docs.python.org/3/library/warnings.html#warnings.warn
 
-
-
-        '''  # Not needed, since connect does a re-try
-        if not self.test_connection():
-            logging.critical(
-                'Problems connecting to NCBI ftp {}. Download of NCBI BLAST nr/nt databases will not proceed.'.format(
-                self._download_ftp
-            ))
-            return False
-        '''
 
         ftp = self.ftp_connect()
 
