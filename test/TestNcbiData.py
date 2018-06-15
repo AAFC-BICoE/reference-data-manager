@@ -15,6 +15,6 @@ class TestNcbiData(unittest.TestCase):
 
 
     def test_getProperties(self):
-        expected_dir = os.path.abspath('../out/test/ncbi/') + '/'
+        expected_dir = os.path.abspath('../../../out/test/ncbi/')+'/'
         self.assertEqual(self.fixture.destination_dir, expected_dir)
 
