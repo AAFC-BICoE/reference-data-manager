@@ -18,11 +18,11 @@ class BaseRefData():
 
         #logging.critical("RDM application has started. Log file is here: {}.".format(self._config['logging']['handlers']['file']['filename']))
 
-        self.destination_dir = os.path.abspath(self._config['root_folder']) + '/'
+        self.destination_dir = os.path.abspath(self.config['root_folder']) + '/'
         if not os.path.exists(self.destination_dir):
             os.makedirs(self.destination_dir)
 
-        self.backup_dir = os.path.abspath(self._config['backup_folder']) + '/'
+        self.backup_dir = os.path.abspath(self.config['backup_folder']) + '/'
         if not os.path.exists(self.backup_dir):
             os.makedirs(self.backup_dir)
 

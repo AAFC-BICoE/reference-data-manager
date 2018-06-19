@@ -23,11 +23,11 @@ class TestNcbiData(unittest.TestCase):
         '''
         pass
 
-
+    
     def test_testConnection(self):
         self.assertTrue(self.fixture.test_connection(), 'Could not connect to NCBI ftp: {}'.format(self.fixture._download_ftp))
 
-
+    
     def testDownload(self):
 
         #success = self.fixture.download()
@@ -62,7 +62,8 @@ class TestNcbiData(unittest.TestCase):
                         "md5 file should have been removed.")
         self.assertFalse(os.path.isfile(self.fixture.destination_dir + 'nr.00.tar.gz'),
                         "tar.gz file should have been removed.")
-
+    
+    
     def test_update(self):
         success = self.fixture.update()
 
@@ -88,14 +89,14 @@ class TestNcbiData(unittest.TestCase):
         backup_folder = self.fixture.backup()
         self.assertFalse(backup_folder)
         '''
-
+        
         self.fixture.download(test_repeats=1)
         backup_folder = self.fixture.backup()
         self.assertTrue(backup_folder)
         self.assertTrue(os.path.isfile(backup_folder + 'README'), "No README found.")
         self.assertTrue(os.path.isfile(backup_folder + 'README+'), "No README+ found.")
-
-
+        
+    
     def test_download_ftp_file(self):
         # Small files to test with: nr.80, nt.53
         # Large files: nt.03, nr.05, nt.23

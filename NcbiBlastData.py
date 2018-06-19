@@ -6,6 +6,8 @@ import re
 import logging.config
 import tarfile
 import time
+from distutils.dir_util import copy_tree
+
 
 class NcbiBlastData(NcbiData, RefDataInterface):
 
@@ -106,8 +108,8 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         logging.info("Running NCBI Blast update")
         # directory to do an intermediary download
         temp_dir = self.destination_dir + 'temp'
-        if not os.path.exists(self.temp_dir):
-            os.makedirs(self.temp_dir)
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
 
         # Download and unzip into an intermediate folder
         os.chdir(temp_dir)
@@ -116,7 +118,8 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         if not success:
             logging.error("Download failed. Update will not proceed.")
             return False
-
+        
+        os.chdir(self.destination_dir)
         backup_success = self.backup()
 
         if not backup_success:
@@ -125,16 +128,18 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
 
         # Delete all data from the destination folder
-        os.chdir(self.destination_dir)
+        
         only_files = [f for f in os.listdir('.') if os.path.isfile(f)]
         for f in only_files:
             os.remove(f)
 
         # Copy data from intermediate folder to destination folder
-        shutil.copytree(temp_dir, self.destination_dir)
+        #shutil.copytree(temp_dir, self.destination_dir)
+        copy_tree(temp_dir, self.destination_dir)
         # Delete intermediate folder
         shutil.rmtree(temp_dir)
-
+        return True
+    
 
     def backup(self):
         # We will not keep a full copy of the directory
