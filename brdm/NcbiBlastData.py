@@ -257,7 +257,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             logging.info("Following files failed to be downloaded and/or un-archived: {}".format(files_download_failed))
 
         # Write application's README+ file
-        comment = 'This is full blast database (all of nr / nt datasets) downloaded from NCBI.'
+        comment = 'This folder contains a reference blast database (nr and nt datasets) downloaded from NCBI.'
         self.write_readme(download_url='{}/{}'.format(self._download_ftp, self._ftp_dir),
                           downloaded_files=downloaded_files, download_failed_files=files_download_failed,
                           comment=comment, execution_time=(time.time() - download_start_time))

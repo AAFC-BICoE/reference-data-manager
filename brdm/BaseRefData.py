@@ -89,6 +89,7 @@ class BaseRefData():
             print("Could not load configuration file. RDM will not run. Error: {}".format(e))
             exit(1)
         except FileNotFoundError as e:
+            print('Configuration file full path: {}'.format(os.path.abspath(config_file)))
             print("Configuration file {} could not be found. RDM will not run. Error: {}".format(config_file, e))
             exit(1)
         except Exception as msg:

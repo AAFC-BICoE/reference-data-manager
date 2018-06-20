@@ -1,9 +1,24 @@
+######################################################
+###           Configuration file for               ###
+### Bioinformatics Reference Data Manager (BRDM)   ###
+######################################################
+
 #root_folder: "/start/folder/for/reference/data/"
 root_folder: "../out/real_test/"
 backup_folder: "../out/real_test/backup/"
+
+### Name of the BRDM-specific readme file. This file is automatically placed in every folder with data and has dual use:
+### for user reference and for backup.
 readme_file: "README+"
+
+### Number of times BRDM will re-triy failed download and failed connections
 download_retry_num: 3
 connection_retry_num: 3
+
+
+######################################################
+### Setup, specific for each download module       ###
+######################################################
 
 ncbi:
     destination_folder: "ncbi/"
@@ -17,6 +32,10 @@ ncbi:
         info_file_name: "README"
 
 
+
+######################################################
+###                 Logging                        ###
+######################################################
 ## Keep below structure - this format is expected by python's logging module
 logging:
 
