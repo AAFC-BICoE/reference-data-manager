@@ -1,7 +1,7 @@
 import sys
 import argparse
 
-from NcbiBlastData import NcbiBlastData
+from brdm.NcbiBlastData import NcbiBlastData
 
 
 def parse_input_args(argv):

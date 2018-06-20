@@ -1,0 +1,107 @@
+2018/06/14 11:23:31 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/14 11:25:05 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/14 11:27:29 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/14 11:28:17 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/14 11:39:50 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/14 11:40:38 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/14 12:19:42 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/14 12:20:30 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/14 12:22:52 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/14 12:23:40 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/14 12:25:46 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/14 12:26:34 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/14 12:26:57 - NcbiBlastData - INFO: README+ file could not be backed-up because it is not found.
+2018/06/14 12:26:57 - NcbiBlastData - INFO: README+ file could not be backed-up because it is not found.
+2018/06/14 12:29:59 - NcbiBlastData - INFO: README+ file could not be backed-up because it is not found.
+2018/06/14 12:29:59 - NcbiBlastData - INFO: README+ file could not be backed-up because it is not found.
+2018/06/14 12:32:22 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/14 12:33:10 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/15 15:33:42 - BaseRefData - INFO: File downloaded: ../out/test/44e343bfe87f56fbc8bb6fbf3a48294aa7b0a1b6.zip
+2018/06/15 15:33:42 - BaseRefData - INFO: File deleted: ../out/test/44e343bfe87f56fbc8bb6fbf3a48294aa7b0a1b6.zip
+2018/06/15 15:33:42 - BaseRefData - INFO: RDM's configuration file was successfully loaded. File name: test_config.yaml
+2018/06/15 15:33:42 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/README+
+2018/06/15 15:34:01 - BaseRefData - INFO: File downloaded: ../out/test/44e343bfe87f56fbc8bb6fbf3a48294aa7b0a1b6.zip
+2018/06/15 15:34:01 - BaseRefData - INFO: File deleted: ../out/test/44e343bfe87f56fbc8bb6fbf3a48294aa7b0a1b6.zip
+2018/06/15 15:34:01 - BaseRefData - INFO: RDM's configuration file was successfully loaded. File name: test_config.yaml
+2018/06/15 15:34:01 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/README+
+2018/06/15 15:34:22 - BaseRefData - INFO: File downloaded: ../out/test/44e343bfe87f56fbc8bb6fbf3a48294aa7b0a1b6.zip
+2018/06/15 15:34:22 - BaseRefData - INFO: File deleted: ../out/test/44e343bfe87f56fbc8bb6fbf3a48294aa7b0a1b6.zip
+2018/06/15 15:34:22 - BaseRefData - INFO: RDM's configuration file was successfully loaded. File name: test_config.yaml
+2018/06/15 15:34:22 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/README+
+2018/06/15 15:34:28 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/15 15:35:16 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/15 15:35:16 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/15 15:36:04 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/15 15:36:04 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/15 16:15:30 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/15 16:16:24 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/20 12:32:07 - BaseRefData - INFO: File downloaded: ../out/test/44e343bfe87f56fbc8bb6fbf3a48294aa7b0a1b6.zip
+2018/06/20 12:32:07 - BaseRefData - INFO: File deleted: ../out/test/44e343bfe87f56fbc8bb6fbf3a48294aa7b0a1b6.zip
+2018/06/20 12:32:07 - BaseRefData - INFO: RDM's configuration file was successfully loaded. File name: test_config.yaml
+2018/06/20 12:32:07 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/README+
+2018/06/20 12:33:41 - BaseRefData - INFO: File downloaded: ../out/test/44e343bfe87f56fbc8bb6fbf3a48294aa7b0a1b6.zip
+2018/06/20 12:33:41 - BaseRefData - INFO: File deleted: ../out/test/44e343bfe87f56fbc8bb6fbf3a48294aa7b0a1b6.zip
+2018/06/20 12:33:41 - BaseRefData - INFO: RDM's configuration file was successfully loaded. File name: test_config.yaml
+2018/06/20 12:33:41 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/README+
+2018/06/20 12:37:55 - BaseRefData - INFO: File downloaded: ../out/test/44e343bfe87f56fbc8bb6fbf3a48294aa7b0a1b6.zip
+2018/06/20 12:37:55 - BaseRefData - INFO: File deleted: ../out/test/44e343bfe87f56fbc8bb6fbf3a48294aa7b0a1b6.zip
+2018/06/20 12:37:55 - BaseRefData - INFO: RDM's configuration file was successfully loaded. File name: test_config.yaml
+2018/06/20 12:37:55 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/README+
+2018/06/20 12:38:44 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/20 12:38:53 - NcbiBlastData - ERROR: Something went wrong with the download of file: nr.00.tar.gz Re-download will not be attempted.
+Traceback (most recent call last):
+  File "/Users/korolo/code/aafc-mbb/reference-data-manager/brdm/NcbiBlastData.py", line 342, in download_ftp_file
+    ftp_connection.retrbinary('RETR {}'.format(file_name), file_obj.write)
+  File "/usr/local/Cellar/python3/3.6.4_1/Frameworks/Python.framework/Versions/3.6/lib/python3.6/ftplib.py", line 444, in retrbinary
+    data = conn.recv(blocksize)
+KeyboardInterrupt
+2018/06/20 12:38:53 - NcbiBlastData - ERROR: Exception when trying to download and extract blast database from NCBI. Error: 450 Transfer aborted. Link to file server lost
+Traceback (most recent call last):
+  File "/Users/korolo/code/aafc-mbb/reference-data-manager/brdm/NcbiBlastData.py", line 246, in download
+    ftp.quit()
+  File "/usr/local/Cellar/python3/3.6.4_1/Frameworks/Python.framework/Versions/3.6/lib/python3.6/ftplib.py", line 665, in quit
+    resp = self.voidcmd('QUIT')
+  File "/usr/local/Cellar/python3/3.6.4_1/Frameworks/Python.framework/Versions/3.6/lib/python3.6/ftplib.py", line 278, in voidcmd
+    return self.voidresp()
+  File "/usr/local/Cellar/python3/3.6.4_1/Frameworks/Python.framework/Versions/3.6/lib/python3.6/ftplib.py", line 251, in voidresp
+    resp = self.getresp()
+  File "/usr/local/Cellar/python3/3.6.4_1/Frameworks/Python.framework/Versions/3.6/lib/python3.6/ftplib.py", line 244, in getresp
+    raise error_temp(resp)
+ftplib.error_temp: 450 Transfer aborted. Link to file server lost
+2018/06/20 12:38:53 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/20 12:39:09 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/20 12:39:27 - NcbiBlastData - WARNING: MD5 check did not pass. Attempting re-downloading again.
+2018/06/20 12:40:21 - NcbiBlastData - WARNING: MD5 check did not pass. Attempting re-downloading again.
+2018/06/20 12:40:30 - NcbiBlastData - ERROR: MD5 check did not pass. The file nr.00.tar.gz will be destroyed.
+2018/06/20 12:40:31 - NcbiBlastData - INFO: Following files failed to be downloaded and/or un-archived: ['nr.00.tar.gz']
+2018/06/20 12:40:31 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/20 12:40:31 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/20 12:40:47 - NcbiBlastData - INFO: Running NCBI Blast update
+2018/06/20 12:40:47 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/20 12:41:22 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/20 12:41:22 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/20 12:41:47 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/20 12:42:23 - NcbiBlastData - ERROR: Exception when trying to download and extract blast database from NCBI. Error: [Errno 2] No such file or directory: 'nr.00.tar.gz'
+Traceback (most recent call last):
+  File "/Users/korolo/code/aafc-mbb/reference-data-manager/brdm/NcbiBlastData.py", line 230, in download
+    downloaded = self.download_blast_file(file, ftp)
+  File "/Users/korolo/code/aafc-mbb/reference-data-manager/brdm/NcbiBlastData.py", line 304, in download_blast_file
+    if not self.check_md5(short_file_name, md5_str):
+  File "/Users/korolo/code/aafc-mbb/reference-data-manager/brdm/BaseRefData.py", line 160, in check_md5
+    with open(file_name, 'rb') as file:
+FileNotFoundError: [Errno 2] No such file or directory: 'nr.00.tar.gz'
+2018/06/20 12:42:23 - NcbiBlastData - INFO: README+ file could not be backed-up because it is not found.
+2018/06/20 12:42:23 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/20 12:42:36 - NcbiBlastData - INFO: Running NCBI Blast update
+2018/06/20 12:42:36 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/20 12:43:22 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/20 12:50:54 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/20 12:51:32 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/20 13:00:18 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/20 13:00:48 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/20 13:00:48 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/20 13:01:24 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
+2018/06/20 13:01:24 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/20 13:01:31 - NcbiBlastData - INFO: Running NCBI Blast update
+2018/06/20 13:01:31 - NcbiBlastData - INFO: Connecting to NCBI ftp: ftp.ncbi.nlm.nih.gov ...
+2018/06/20 13:02:15 - BaseRefData - INFO: Finished writing an application README file: /Users/korolo/code/aafc-mbb/reference-data-manager/out/test/ncbi/blast/README+
