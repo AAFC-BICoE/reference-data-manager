@@ -2,6 +2,7 @@
 ###           Configuration file for               ###
 ### Bioinformatics Reference Data Manager (BRDM)   ###
 ######################################################
+# Modify this file and rename to config.yaml
 
 root_folder: "/root/folder/for/reference/data/"
 backup_folder: "/backup/root/folder/for/reference/data/"

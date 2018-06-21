@@ -1,3 +1,5 @@
 .idea
 venv
 .pypirc
+config.yaml
+test_config.yaml
