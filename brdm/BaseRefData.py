@@ -14,7 +14,6 @@ class BaseRefData():
         #print('In NcbiData. config file: {}'.format(os.path.abspath(config_file)))
         self.config = self.load_config(config_file)
         # TODO: Check if config was loaded
-        logging.config.dictConfig(self.config['logging'])
 
         #logging.critical("RDM application has started. Log file is here: {}.".format(self._config['logging']['handlers']['file']['filename']))
 
@@ -31,7 +30,7 @@ class BaseRefData():
         self.download_retry_num = self.config['download_retry_num']
         self.connection_retry_num = self.config['connection_retry_num']
 
-
+        logging.config.dictConfig(self.config['logging'])
 
     @property
     def config(self):

@@ -105,7 +105,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
 
     def update(self):
-        logging.info("Running NCBI Blast update")
+        logging.info("Executing NCBI Blast update")
         # directory to do an intermediary download
         temp_dir = self.destination_dir + 'temp'
         if not os.path.exists(temp_dir):
@@ -142,13 +142,11 @@ class NcbiBlastData(NcbiData, RefDataInterface):
     
 
     def backup(self):
-        # We will not keep a full copy of the directory
-        #shutil.copytree(self.destination_dir, self.backup_dir)
-
+        logging.info("Executing NCBI Blast backup")
 
         backup_folder = self.create_backup_dir()
         if not backup_folder:
-            logging.error("Backup did not succeed.")
+            logging.error("NCBI Blast Backup did not succeed.")
             return False
 
         # Copy only README files for future reference
@@ -167,7 +165,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             else:
                 logging.info("{} file could not be backed-up because it is not found.".format(app_readme_file))
         except Exception as e:
-            logging.exception("Backup did not succeed. Error: {}".format(e))
+            logging.exception("NCBI Blast Backup did not succeed. Error: {}".format(e))
             return False
 
         return backup_folder
@@ -175,6 +173,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
     # Deletes all blast database files. Directory structure will be preserved.
     def delete(self):
+        ## TODO: finish, move to BaseRefData and use in update method here
         all_files = os.listdir(self.destination_dir)
 
         for file in all_files:
