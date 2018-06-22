@@ -73,6 +73,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         connection_successful = False
 
         try:
+            logging.info("Testing NCBI connection. FTP: {}".format(self._download_ftp))
             ftp = ftplib.FTP(self._download_ftp)
             ftp.login(user=self._ncbi_user, passwd=self._ncbi_passw)
             ftp.cwd(self._ftp_dir)
@@ -84,7 +85,8 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                 connection_successful = True
 
             ftp.quit()
-        except:
+        except Exception as e:
+            logging.exception("Exception when testing connection: {}".format(e))
             return False
 
         return connection_successful
