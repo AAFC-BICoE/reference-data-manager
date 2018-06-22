@@ -113,7 +113,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
         # Download and unzip into an intermediate folder
         os.chdir(temp_dir)
-        success = self.download(test_repeats=1)
+        success = self.download()
 
         if not success:
             logging.error("Download failed. Update will not proceed.")
