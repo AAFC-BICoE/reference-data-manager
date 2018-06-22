@@ -36,10 +36,9 @@ setup(
       },
 
     install_requires=[
-        'numpy==1.14.0',
-        'biopython==1.70',
+        'biopython==1.71',
         'PyYAML==3.12',
-        'requests==2.18.4', ## This one also installs certifi, idna, urllib3, chardet and itself (requests)
+        'requests==2.19.1', ## This one also installs certifi, idna, urllib3, chardet and itself (requests)
       ],
 
 
