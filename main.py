@@ -2,6 +2,7 @@ import sys
 import argparse
 
 from brdm.NcbiBlastData import NcbiBlastData
+from brdm.NcbiSubsetData import NcbiSubsetData
 from brdm import brdm_root
 
 
@@ -16,10 +17,11 @@ def parse_input_args(argv):
                         action='store_true', required=False)
     parser.add_argument('--update-ncbi-subsets', help="Update NCBI's subsets (ITS, CO1, etc.)", dest="ncbi_subsets_update",
                         action = 'store_true', required=False)
-
+    parser.add_argument('--restore-ncbi-subsets', help="Restore NCBI's subsets (ITS, CO1, etc.)", dest="ncbi_subsets_restore_folder",
+                        required=False)
     args = parser.parse_args(argv)
 
-    if not (args.ncbi_blast_update or args.ncbi_subsets_update or args.test):
+    if not (args.ncbi_blast_update or args.ncbi_subsets_update or args.test or args.ncbi_subsets_restore_folder):
         parser.error('No action requested. Please add one of the required actions.')
 
     return args
@@ -31,7 +33,8 @@ def execute_script(input_args):
     config_file = "{}/config.yaml".format(brdm_root.path())
     parsed_args = parse_input_args(input_args)
 
-
+    
+        
     if parsed_args.test:
         print("Testing NCBI ftp connection.")
         blastData = NcbiBlastData(config_file)
@@ -55,9 +58,22 @@ def execute_script(input_args):
             ))
 
     if parsed_args.ncbi_subsets_update:
-        print("Subsets update: not yet implemented.")
-
-
+        print("Running NCBI Subsets update")
+        subsetData = NcbiSubsetData(config_file)
+        success = subsetData.update()
+        if success:
+            print("NCBI subsets reference data were updated successfully. It is located at: {}".format(
+                subsetData.destination_dir
+            ))
+     
+    if parsed_args.ncbi_subsets_restore_folder:
+        print("Restore NCBI subsets: %s " % parsed_args.ncbi_subsets_restore_folder)
+        subsetData = NcbiSubsetData(config_file)
+        success = subsetData.restore(parsed_args.ncbi_subsets_restore_folder)
+        if success:
+            print("NCBI subsets reference data were restored successfully. It is located at: {}".format(
+                subsetData.destination_dir
+            ))   
 def main():
     execute_script(sys.argv[1:])
 

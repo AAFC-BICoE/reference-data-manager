@@ -127,7 +127,7 @@ class BaseRefData():
 
 
     def write_readme(self, download_url, downloaded_files, download_failed_files=[], comment='', execution_time=0):
-        file_name = self.destination_dir + self.config['readme_file']
+        file_name = self.config['readme_file']
         #print("Readme file: {}\n".format(file_name))
         with open(file_name, 'w') as f:
             f.write("About: this an automatically generated description file for the data located in this folder.\n")
