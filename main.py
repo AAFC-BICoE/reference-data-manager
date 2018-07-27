@@ -3,6 +3,7 @@ import argparse
 
 from brdm.NcbiBlastData import NcbiBlastData
 from brdm.NcbiSubsetData import NcbiSubsetData
+from brdm.NcbiTaxonomyData import NcbiTaxonomyData
 from brdm import brdm_root
 
 
@@ -15,24 +16,31 @@ def parse_input_args(argv):
                         action='store_true', required=False)
     parser.add_argument('--update-ncbi-blast', help="Update entire nr/nt Blast reference data from NCBI.", dest="ncbi_blast_update",
                         action='store_true', required=False)
-    parser.add_argument('--update-ncbi-subsets', help="Update NCBI's subsets (ITS, CO1, etc.)", dest="ncbi_subsets_update",
+    parser.add_argument('--update-ncbi-subsets', help="Update NCBI subsets (ITS, CO1, etc.)", dest="ncbi_subsets_update",
+                        action = 'store_true', required=False)
+    parser.add_argument('--update-ncbi-taxonomy', help="Update NCBI taxonomy", dest="ncbi_taxonomy_update",
                         action = 'store_true', required=False)
     parser.add_argument('--restore-ncbi-subsets', help="Restore NCBI's subsets (ITS, CO1, etc.)", dest="ncbi_subsets_restore_folder",
                         required=False)
+    parser.add_argument('--config-file', help="Path to the config file", dest="config_file",
+                        required=False)
     args = parser.parse_args(argv)
 
-    if not (args.ncbi_blast_update or args.ncbi_subsets_update or args.test or args.ncbi_subsets_restore_folder):
+    if not (args.ncbi_blast_update or \
+            args.ncbi_subsets_update or \
+            args.ncbi_taxonomy_update or \
+            args.test or \
+            args.ncbi_subsets_restore_folder):
         parser.error('No action requested. Please add one of the required actions.')
 
     return args
 
-
-
 def execute_script(input_args):
 
-    config_file = "{}/config.yaml".format(brdm_root.path())
     parsed_args = parse_input_args(input_args)
-
+    config_file = "{}/config.yaml".format(brdm_root.path())
+    if parsed_args.config_file:
+        config_file = parsed_args.config_file;
     
         
     if parsed_args.test:
@@ -64,6 +72,15 @@ def execute_script(input_args):
         if success:
             print("NCBI subsets reference data were updated successfully. It is located at: {}".format(
                 subsetData.destination_dir
+            ))
+            
+    if parsed_args.ncbi_taxonomy_update:
+        print("Running NCBI Taxonomy update")
+        taxonomyData = NcbiTaxonomyData(config_file)
+        success = taxonomyData.update()
+        if success:
+            print("NCBI taxonomy data were updated successfully. It is located at: {}".format(
+                taxonomyData.destination_dir
             ))
      
     if parsed_args.ncbi_subsets_restore_folder:
