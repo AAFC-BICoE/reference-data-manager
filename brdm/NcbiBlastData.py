@@ -17,8 +17,8 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
         self._download_ftp = self.config['ncbi']['blast_db']['ftp']
         self._ftp_dir = self.config['ncbi']['blast_db']['ftp_dir']
-        self._ncbi_user = self.config['ncbi']['blast_db']['user']
-        self._ncbi_passw = self.config['ncbi']['blast_db']['password']
+        self._ncbi_user = self.config['ncbi']['blast_db']['ftp_user']
+        self._ncbi_passw = self.config['ncbi']['blast_db']['ftp_password']
         self._info_file_name = self.config['ncbi']['blast_db']['info_file_name']
 
         self.destination_dir = super(NcbiBlastData, self).destination_dir + self.config['ncbi']['blast_db']['destination_folder']
@@ -71,7 +71,6 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
     def test_connection(self):
         connection_successful = False
-
         try:
             logging.info("Testing NCBI connection. FTP: {}".format(self._download_ftp))
             ftp = ftplib.FTP(self._download_ftp)
@@ -216,7 +215,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
             nr_nt_files = [file_name for file_name in all_files if nr_nt_re.match(file_name)]
 
-
+#success = self.download_ftp_file(short_file_name, ftp_link)
             ### Download NCBI README file
             #self.download_ftp_file(self._info_file_name, ftp)
             with open(self._info_file_name, 'wb') as f:
@@ -229,14 +228,11 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                     test_repeats -= 1
 
                     downloaded = self.download_blast_file(file, ftp)
-
                     unzipped = False
                     if downloaded:
-                        downloaded_files.append(file)
                         unzipped = self.unzip_file(file)
-
                     if unzipped:
-                        os.remove(file)
+                        downloaded_files.append(file)
                     else:
                         files_download_failed.append(file)
 
@@ -247,10 +243,6 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             ftp.quit()
         except Exception as e:
             logging.exception("Exception when trying to download and extract blast database from NCBI. Error: {}".format(e))
-            try:
-                ftp.quit()
-            except:
-                pass  # If connection was dead at this point, then it's fine
 
             return False
 
@@ -270,23 +262,11 @@ class NcbiBlastData(NcbiData, RefDataInterface):
     # Downloads a file and its corresponding .md5 file. Checks if md5 match.
     def download_blast_file(self, short_file_name, ftp_link):
         md5_file = '{}.md5'.format(short_file_name)
-        '''
-        md5_data = []
-        try:
-            ftp_link.retrbinary('RETR {}'.format(md5_file), md5_data.append)
-
-        except ftplib.error_perm as e:
-            logging.error("Can't download {} file from NCBI. Returned error: {}. \n Download will not continue".format(short_file_name, e))
-            return False
         
-        md5_str = md5_data[0].decode("utf-8") .split(' ')[0]
-        '''
-
         success = self.download_ftp_file(md5_file, ftp_link)
 
         if not success:
             return False
-
 
         try:
             with open(md5_file, 'r') as f:
@@ -315,7 +295,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
 
     def download_ftp_file(self, file_name, ftp_connection):
-
+        time.sleep(1)
         download_success = False
 
         if not ftp_connection:
@@ -372,18 +352,3 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
 
         return download_success
-
-
-
-    def unzip_file(self, filename):
-
-        try:
-            if (filename.endswith("tar.gz")):
-                tar = tarfile.open(filename, "r:gz")
-                tar.extractall()
-                tar.close()
-        except Exception as e:
-            logging.exception("Failed to exctract file {}. Error: {}".format(filename, e))
-            return False
-
-        return True
