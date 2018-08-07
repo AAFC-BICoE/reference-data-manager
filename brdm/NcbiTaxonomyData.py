@@ -12,14 +12,12 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
     def __init__(self, config_file):
         # Parse configuration values
         super(NcbiTaxonomyData, self).__init__(config_file)
-        self._login_url = self.config['ncbi']['login_url']
+        
         self._download_folder = self.config['ncbi']['taxonomy']['download_folder']
         self._download_file = self.config['ncbi']['taxonomy']['download_file']
         self._taxonomy_file = self.config['ncbi']['taxonomy']['taxonomy_file']
-        self._ncbi_user = self.config['ncbi']['user']
-        self._ncbi_passw = self.config['ncbi']['password']
         self._info_file_name = self.config['ncbi']['taxonomy']['info_file_name']
-        
+        self._chunk_size = self.config['ncbi']['taxonomy']['chunk_size']
         # Create destination directory and backup directory
         try:
             self.destination_dir = super(NcbiTaxonomyData, self).destination_dir + self.config['ncbi']['taxonomy']['destination_folder']
@@ -119,7 +117,7 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
                 connected = True
             except Exception as e:
                 print("Error connecting to login_url {}: {} Retrying...".format(self._login_url, e))
-                time.sleep(5)
+                time.sleep(self.sleep_time)
                 retry_num -= 1
         return session_requests, connected
     
@@ -165,7 +163,7 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
                 session_requests.close()
             except Exception as e:
                 logging.info("failed to download taxonomy file on attempt {}: {}".format(attempt, e)) 
-                time.sleep(5)
+                time.sleep(self.sleep_time)
                
         if completed:
             unzip_success = self.unzip_file(file_name_taxon)           
@@ -201,7 +199,7 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
     
     # Download a file with provided file name and file address(link)
     def download_a_file(self, file_name, file_address, session_requests):
-        chunkSize = 1024 * 512
+        chunkSize = self._chunk_size
         totalSize = 0
         try:    
             res = session_requests.get(file_address, stream=True, verify=False)
@@ -224,14 +222,14 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
         taxonomy_file = filename+".txt"
         try:
             taxonomy = open(taxonomy_file,"w")
-            taxonomy.write("taxon_id\t k_kingdom; p_phylum; c_class; o_order; f_family; g_genus; s_species\n")
+            taxonomy.write("taxon_id\ttaxon_name\td_domain; k_kingdom; p_phylum; c_class; o_order; f_family; g_genus; s_species\n")
             with open(dmp_file) as fp:
                 content = fp.readlines()
                 for line in content:
                     line = line[:-3]
                     x = line.split("\t|\t")
                     tax_id, tax_name, species, genus, family, order, taxon_class,  phylum, kingdom, superkingdom = x
-                    taxonomy.write(tax_id+"\tk_"+kingdom+"; p_"+phylum+"; c_"+taxon_class+"; o_"+order+"; f_"+family+"; g_"+genus+"; s_"+species+"\n")
+                    taxonomy.write(tax_id+"\t"+tax_name+"\td_"+superkingdom+"; k_"+kingdom+"; p_"+phylum+"; c_"+taxon_class+"; o_"+order+"; f_"+family+"; g_"+genus+"; s_"+species+"\n")
             taxonomy.close()   
         except Exception as e:
             logging.exception('Failed to format taxonomy file')

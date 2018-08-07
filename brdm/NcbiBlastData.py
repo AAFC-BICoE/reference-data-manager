@@ -1,6 +1,7 @@
 from brdm.NcbiData import NcbiData
 from brdm.RefDataInterface import RefDataInterface
 import os, shutil
+import tempfile
 import ftplib
 import re
 import logging.config
@@ -12,7 +13,6 @@ from distutils.dir_util import copy_tree
 class NcbiBlastData(NcbiData, RefDataInterface):
 
     def __init__(self, config_file):
-        #print('In NcbiBlastData. config file: {}'.format(os.path.abspath(config_file)))
         super(NcbiBlastData, self).__init__(config_file)
 
         self._download_ftp = self.config['ncbi']['blast_db']['ftp']
@@ -22,14 +22,20 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         self._info_file_name = self.config['ncbi']['blast_db']['info_file_name']
 
         self.destination_dir = super(NcbiBlastData, self).destination_dir + self.config['ncbi']['blast_db']['destination_folder']
-        if not os.path.exists(self.destination_dir):
-            os.makedirs(self.destination_dir)
-        os.chdir(self.destination_dir)
+        try:
+            if not os.path.exists(self.destination_dir):
+                os.makedirs(self.destination_dir)
+            os.chdir(self.destination_dir)
+        except Exception as e:
+            logging.error("Failed to create the destination_dir : {} with error {}".format(self.destination_dir, e))
 
         self.backup_dir = super(NcbiBlastData, self).backup_dir + self.config['ncbi']['blast_db'][
             'destination_folder']
-        if not os.path.exists(self.backup_dir):
-            os.makedirs(self.backup_dir)
+        try:
+            if not os.path.exists(self.backup_dir):
+                os.makedirs(self.backup_dir)
+        except Exception as e:
+            logging.error("Failed to create the backup_dir : {} with error {}".format(self.backup_dir, e))
 
 
     @property
@@ -39,7 +45,6 @@ class NcbiBlastData(NcbiData, RefDataInterface):
     @destination_dir.setter
     def destination_dir(self, value):
         self._destination_dir = value
-
 
     @property
     def backup_dir(self):
@@ -62,11 +67,10 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                 ftp.cwd(self._ftp_dir)
             except Exception as e:
                 print("Error connecting to FTP: {} Retrying...".format(e))
-                time.sleep(1)
+                time.sleep(self.sleep_time)
                 retry_num -= 1
 
         return ftp
-
 
 
     def test_connection(self):
@@ -108,37 +112,52 @@ class NcbiBlastData(NcbiData, RefDataInterface):
     def update(self):
         logging.info("Executing NCBI Blast update")
         # directory to do an intermediary download
-        temp_dir = self.destination_dir + 'temp'
-        if not os.path.exists(temp_dir):
+        try:
+            #temp_dir = tempfile.mkdtemp(dir = self.destination_dir )
+            temp_dir = self.destination_dir + 'temp'
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
             os.makedirs(temp_dir)
-
+            os.chdir(temp_dir)
+        except Exception as e:
+            logging.error("Failed to create the temp_dir: {}, error{}".format(temp_dir, e))
+            return False
         # Download and unzip into an intermediate folder
-        os.chdir(temp_dir)
         success = self.download()
 
         if not success:
             logging.error("Download failed. Update will not proceed.")
             return False
         
-        os.chdir(self.destination_dir)
+        try:
+            os.chdir(self.destination_dir)
+        except Exception as e:
+            logging.error("Failed to change dir: {}, error{}".format(self.destination_dir, e))
+            return False
+        
         backup_success = self.backup()
 
         if not backup_success:
             logging.error("Backup of reference data did not succeed. The update will not continue.")
             return False
 
-
         # Delete all data from the destination folder
-        
-        only_files = [f for f in os.listdir('.') if os.path.isfile(f)]
-        for f in only_files:
-            os.remove(f)
-
+        try:
+            only_files = [f for f in os.listdir('.') if os.path.isfile(f)]
+            for f in only_files:
+                os.remove(f)
+        except Exception as e:
+            logging.error("Failed to remove old files from destination folder, error{}".format(e))
+            return False
         # Copy data from intermediate folder to destination folder
-        #shutil.copytree(temp_dir, self.destination_dir)
-        copy_tree(temp_dir, self.destination_dir)
         # Delete intermediate folder
-        shutil.rmtree(temp_dir)
+        try:
+            copy_tree(temp_dir, self.destination_dir)
+            shutil.rmtree(temp_dir)
+        except Exception as e:
+            logging.error("Failed to copy file from temp dir to destination folder, error{}".format(e))
+            return False
+        
         return True
     
 
@@ -192,14 +211,10 @@ class NcbiBlastData(NcbiData, RefDataInterface):
     # Download all nr / nt blast databases
     def download(self, test_repeats=0):
         download_start_time = time.time()
-
-        #TODO: Check time, and if it is not after hours for ncbi, give a warning
-        # Check out warning.warn(): https://docs.python.org/3/library/warnings.html#warnings.warn
-
-
+        
         ftp = self.ftp_connect()
 
-        if not ftp:
+        if not self.test_existing_connection(ftp):
             logging.error("Could not connect to NCBI ftp {}. Download will not continue.")
             return False
 
@@ -220,14 +235,17 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             #self.download_ftp_file(self._info_file_name, ftp)
             with open(self._info_file_name, 'wb') as f:
                 ftp.retrbinary('RETR {}'.format(self._info_file_name), f.write, 1024)
-
+            
+            logging.info("get the list of files and downloaded readme file")
+           
+      
             if test_repeats == 0:
                 test_repeats = len(nr_nt_files) + 2
             for file in nr_nt_files:
                 if test_repeats > 0:
                     test_repeats -= 1
 
-                    downloaded = self.download_blast_file(file, ftp)
+                    downloaded = self.download_blast_file(file,ftp)
                     unzipped = False
                     if downloaded:
                         unzipped = self.unzip_file(file)
@@ -235,15 +253,16 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                         downloaded_files.append(file)
                     else:
                         files_download_failed.append(file)
-
-
                 else:
                     break
-
-            ftp.quit()
+                
+            if self.test_existing_connection(ftp):
+                ftp.quit()
+                
         except Exception as e:
             logging.exception("Exception when trying to download and extract blast database from NCBI. Error: {}".format(e))
-
+            if self.test_existing_connection(ftp):
+                ftp.quit()
             return False
 
         if files_download_failed:
@@ -295,13 +314,13 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
 
     def download_ftp_file(self, file_name, ftp_connection):
-        time.sleep(1)
+        time.sleep(self.sleep_time)
         download_success = False
 
-        if not ftp_connection:
-            ftp = self.ftp_connect()
+        if not self.test_existing_connection(ftp_connection):
+            ftp_connection = self.ftp_connect()
 
-        if ftp_connection:
+        if self.test_existing_connection(ftp_connection):
             max_download_attempts = self.download_retry_num
             try:
                 ftp_file_size = ftp_connection.size(file_name)
@@ -328,10 +347,10 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                         if max_download_attempts != 0:
                             print('Re-trying the download of file: {}'.format(file_name))
                             logging.warning('Re-trying the download of file: {}'.format(file_name))
-                            time.sleep(1)  # sleep one second before re-trying
+                            time.sleep(self.sleep_time)  # sleep one second before re-trying
                             ftp_connection = self.ftp_connect()
                             max_download_attempts -= 1
-                            if not ftp_connection:
+                            if not self.test_existing_connection(ftp_connection):
                                 logging.error("Connection could not be established.")
                                 return False
                         else:
