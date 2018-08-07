@@ -4,17 +4,17 @@
 ######################################################
 # Modify this file and rename to config.yaml
 
-root_folder: "/root/folder/for/reference/data/"
-backup_folder: "/backup/root/folder/for/reference/data/"
+root_folder: "/path/to/database/root/folder/"
+backup_folder: "/path/to/database/backup/folder/"
 
 ### Name of the BRDM-specific readme file. This file is automatically placed in every folder with data and has dual use:
 ### for user reference and for backup.
 readme_file: "README+"
 
-### Number of times BRDM will re-triy failed download and failed connections
+### Number of times BRDM will re-try failed download and failed connections
 download_retry_num: 3
 connection_retry_num: 3
-
+sleep_time: 5
 
 ######################################################
 ### Setup, specific for each download module       ###
@@ -22,15 +22,42 @@ connection_retry_num: 3
 
 ncbi:
     destination_folder: "ncbi/"
-
+    login_url: "https://ftp.ncbi.nlm.nih.gov"
+    user: "your_ncbi_ID"
+    password: "your_ncbi_password"
+    
     blast_db:
         destination_folder: "blast/"
         ftp: "ftp.ncbi.nlm.nih.gov"
         ftp_dir: "blast/db/"
-        user: "specify user name"
-        password: "specify password"
         info_file_name: "README"
-
+        ftp_user: "anonymous"
+        ftp_password: "anonymous"
+        
+    taxonomy:       
+        destination_folder: "taxonomy/"
+        info_file_name: "taxdump_readme.txt"
+        download_folder: "pub/taxonomy/new_taxdump"
+        download_file: "new_taxdump.tar.gz"
+        taxonomy_file: "rankedlineage"
+        chunk_size: 524288
+    
+    subsets:
+        destination_folder: "subsets/"
+        entrez_email: "your_email_address"
+        info_file_name: "README"
+        taxonomy_file: "/path/to/ncbi/taxonomy/rankedlineage.txt"
+        nt_file: "/path/to/ncbi/blast/nt"
+        ext_accID: ".accID"
+        ext_sequence: ".fasta"
+        ext_taxonomy: ".taxon"
+        batch_size: 50
+        line_width: 80
+        query_set:
+            - "CO1p | COI and Phyllocnistis citrella"
+            - "ITSD | Internal Transcribed Spacer[All Fields] and Diplodia seriata"
+    
+    
 
 ######################################################
 ###                 Logging                        ###

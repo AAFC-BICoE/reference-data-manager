@@ -9,17 +9,22 @@ class NcbiData(BaseRefData, RefDataInterface):
 
     def __init__(self, config_file):
         super(NcbiData, self).__init__(config_file)
+        self._login_url = self.config['ncbi']['login_url']
+        self._ncbi_user = self.config['ncbi']['user']
+        self._ncbi_passw = self.config['ncbi']['password']
+        try:
+            self.destination_dir = super(NcbiData, self).destination_dir + self.config['ncbi']['destination_folder']
+            if not os.path.exists(self.destination_dir):
+                os.makedirs(self.destination_dir)
+            os.chdir(self.destination_dir)
 
-        self.destination_dir = super(NcbiData, self).destination_dir + self.config['ncbi']['destination_folder']
-        if not os.path.exists(self.destination_dir):
-            os.makedirs(self.destination_dir)
-        os.chdir(self.destination_dir)
+            self.backup_dir = super(NcbiData, self).backup_dir + self.config['ncbi']['destination_folder']
+            if not os.path.exists(self.backup_dir):
+                os.makedirs(self.backup_dir)
+        except Exception as e:
+            logging.error("Failed to create the destination or backup_dir with error {}".format(e))
 
-        self.backup_dir = super(NcbiData, self).backup_dir + self.config['ncbi']['destination_folder']
-        if not os.path.exists(self.backup_dir):
-            os.makedirs(self.backup_dir)
-
-
+        
     @property
     def destination_dir(self):
         return self._destination_dir
@@ -45,6 +50,9 @@ class NcbiData(BaseRefData, RefDataInterface):
     '''
 
     def test_connection(self):
+        logging.info("Checking connection ... Nothing to do.")
+        pass
+    '''
         connection_successful = False
 
         try:
@@ -61,7 +69,7 @@ class NcbiData(BaseRefData, RefDataInterface):
             return False
 
         return connection_successful
-
+    '''
 
     def download(self):
         logging.info("Downloading all of NCBI reference data ... Nothing to do.")
@@ -75,7 +83,7 @@ class NcbiData(BaseRefData, RefDataInterface):
         logging.info("Backing up all of NCBI reference data ... Nothing to do.")
         pass
 
-    def restore(self):
+    def restore(self,folder_name):
         logging.info("Restoringing all of NCBI reference data ... Nothing to do.")
         pass
 
