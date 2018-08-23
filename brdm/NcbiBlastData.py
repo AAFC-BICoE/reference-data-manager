@@ -22,20 +22,18 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         self._info_file_name = self.config['ncbi']['blast_db']['info_file_name']
 
         self.destination_dir = super(NcbiBlastData, self).destination_dir + self.config['ncbi']['blast_db']['destination_folder']
-        try:
-            if not os.path.exists(self.destination_dir):
-                os.makedirs(self.destination_dir)
-            os.chdir(self.destination_dir)
-        except Exception as e:
-            logging.error("Failed to create the destination_dir : {} with error {}".format(self.destination_dir, e))
-
         self.backup_dir = super(NcbiBlastData, self).backup_dir + self.config['ncbi']['blast_db'][
             'destination_folder']
         try:
+            if not os.path.exists(self.destination_dir):
+                os.makedirs(self.destination_dir)
+                os.chmod(self.destination_dir, int(folder_mode,8))
+            os.chdir(self.destination_dir)
             if not os.path.exists(self.backup_dir):
                 os.makedirs(self.backup_dir)
+                os.chmod(self.backup_dir, int(folder_mode,8))
         except Exception as e:
-            logging.error("Failed to create the backup_dir : {} with error {}".format(self.backup_dir, e))
+            logging.error("Failed to create the destination or backup_dir : {} with error {}".format(self.backup_dir, e))
 
 
     @property
@@ -124,25 +122,27 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             return False
         # Download and unzip into an intermediate folder
         success = self.download()
-
         if not success:
             logging.error("Download failed. Update will not proceed.")
             return False
         
         try:
-            os.chdir(self.destination_dir)
+            only_files = [f for f in os.listdir('.') if os.path.isfile(f)]
+            for f in only_files:
+                os.chmod(f, int(file_mode,8))   
         except Exception as e:
-            logging.error("Failed to change dir: {}, error{}".format(self.destination_dir, e))
+            logging.error("Failed to change file mode, error{}".format(e))
             return False
         
+        
         backup_success = self.backup()
-
         if not backup_success:
             logging.error("Backup of reference data did not succeed. The update will not continue.")
             return False
 
         # Delete all data from the destination folder
         try:
+            os.chdir(self.destination_dir)
             only_files = [f for f in os.listdir('.') if os.path.isfile(f)]
             for f in only_files:
                 os.remove(f)
@@ -152,7 +152,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         # Copy data from intermediate folder to destination folder
         # Delete intermediate folder
         try:
-            copy_tree(temp_dir, self.destination_dir)
+            copy_tree(temp_dir, self.destination_dir) 
             shutil.rmtree(temp_dir)
         except Exception as e:
             logging.error("Failed to copy file from temp dir to destination folder, error{}".format(e))

@@ -16,6 +16,10 @@ download_retry_num: 3
 connection_retry_num: 3
 sleep_time: 5
 
+### Folder mode and file mode
+folder_mode: 700
+file_mode: 600
+
 ######################################################
 ### Setup, specific for each download module       ###
 ######################################################

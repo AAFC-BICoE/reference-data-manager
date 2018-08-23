@@ -16,11 +16,13 @@ class NcbiData(BaseRefData, RefDataInterface):
             self.destination_dir = super(NcbiData, self).destination_dir + self.config['ncbi']['destination_folder']
             if not os.path.exists(self.destination_dir):
                 os.makedirs(self.destination_dir)
+                os.chmod(self.destination_dir, int(folder_mode,8))
             os.chdir(self.destination_dir)
 
             self.backup_dir = super(NcbiData, self).backup_dir + self.config['ncbi']['destination_folder']
             if not os.path.exists(self.backup_dir):
                 os.makedirs(self.backup_dir)
+                os.chmod(self.backup_dir, int(folder_mode,8))
         except Exception as e:
             logging.error("Failed to create the destination or backup_dir with error {}".format(e))
 

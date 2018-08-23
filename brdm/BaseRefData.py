@@ -13,22 +13,26 @@ class BaseRefData():
     def __init__(self, config_file):
         
         self.config = self.load_config(config_file)
+        self.download_retry_num = self.config['download_retry_num']
+        self.connection_retry_num = self.config['connection_retry_num']
+        self.sleep_time =  self.config['sleep_time']
+        self.folder_mode = self.config['folder_mode']
+        self.file_mode = self.config['file_mode']
+        logging.config.dictConfig(self.config['logging'])
         
         try:
             self.destination_dir = os.path.abspath(self.config['root_folder']) + '/'
             if not os.path.exists(self.destination_dir):
                 os.makedirs(self.destination_dir)
-
+                os.chmod(self.destination_dir, int(folder_mode,8))
             self.backup_dir = os.path.abspath(self.config['backup_folder']) + '/'
             if not os.path.exists(self.backup_dir):
                 os.makedirs(self.backup_dir)
+                os.chmod(self.backup_dir, int(folder_mode,8))
         except Exception as e:
             logging.error("Failed to create the root_dir or backup_dir with error {}".format(e))
          
-        self.download_retry_num = self.config['download_retry_num']
-        self.connection_retry_num = self.config['connection_retry_num']
-        self.sleep_time =  self.config['sleep_time']
-        logging.config.dictConfig(self.config['logging'])
+        
 
     @property
     def config(self):

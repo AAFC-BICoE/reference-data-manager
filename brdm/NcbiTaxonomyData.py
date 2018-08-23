@@ -23,10 +23,12 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
             self.destination_dir = super(NcbiTaxonomyData, self).destination_dir + self.config['ncbi']['taxonomy']['destination_folder']
             if not os.path.exists(self.destination_dir):
                 os.makedirs(self.destination_dir)
+                os.chmod(self.destination_dir, int(folder_mode,8))
             os.chdir(self.destination_dir)
             self.backup_dir = super(NcbiTaxonomyData, self).backup_dir + self.config['ncbi']['taxonomy']['destination_folder']
             if not os.path.exists(self.backup_dir):
                 os.makedirs(self.backup_dir)
+                os.chmod(self.backup_dir, int(folder_mode,8))
         except Exception as e:
             logging.error("Failed to create the destination_dir or backup_dir with error {}".format(e))
             
@@ -95,6 +97,8 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
             for f in only_files:
                 if not f==app_readme_file and not f==ncbi_readme_file and not f==taxonomy_file:
                     os.remove(f)
+                else:
+                    os.chmod(f, int(file_mode,8))
         except Exception as e:
             logging.error("Failed to remove unwanted files, error{}".format(e))
             return False
