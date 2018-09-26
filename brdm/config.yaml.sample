@@ -14,11 +14,13 @@ readme_file: "README+"
 ### Number of times BRDM will re-try failed download and failed connections
 download_retry_num: 3
 connection_retry_num: 3
-sleep_time: 5
+sleep_time: 2
 
 ### Folder mode and file mode
-folder_mode: 700
-file_mode: 600
+folder_mode: 0o750
+file_mode: 0o640
+
+
 
 ######################################################
 ### Setup, specific for each download module       ###
@@ -29,14 +31,12 @@ ncbi:
     login_url: "https://ftp.ncbi.nlm.nih.gov"
     user: "your_ncbi_ID"
     password: "your_ncbi_password"
-    
+    chunk_size: 524288
+
     blast_db:
         destination_folder: "blast/"
-        ftp: "ftp.ncbi.nlm.nih.gov"
-        ftp_dir: "blast/db/"
+        download_folder: "blast/db/"
         info_file_name: "README"
-        ftp_user: "anonymous"
-        ftp_password: "anonymous"
         
     taxonomy:       
         destination_folder: "taxonomy/"
@@ -44,8 +44,17 @@ ncbi:
         download_folder: "pub/taxonomy/new_taxdump"
         download_file: "new_taxdump.tar.gz"
         taxonomy_file: "rankedlineage"
-        chunk_size: 524288
     
+    whole_genome:       
+        destination_folder: "wholeGenome/"
+        info_file_name: "README.txt"
+        download_folder: "genomes/refseq/"
+        download_file: "assembly_summary.txt"
+        assembly_level: "Complete Genome"
+        species:
+            - bacteria
+            - viral
+
     subsets:
         destination_folder: "subsets/"
         entrez_email: "your_email_address"
@@ -61,8 +70,16 @@ ncbi:
             - "CO1p | COI and Phyllocnistis citrella"
             - "ITSD | Internal Transcribed Spacer[All Fields] and Diplodia seriata"
     
+greengene:
+    destination_folder: "greengene/"
+    info_file_name: "00README"
+    download_url: "ftp://greengenes.microbio.me/greengenes_release/gg_13_5/"
+    chunk_size: 524288
+    download_file:
+        - "gg_13_5.fasta.gz"
+        - "gg_13_5_taxonomy.txt.gz"
     
-
+    
 ######################################################
 ###                 Logging                        ###
 ######################################################
