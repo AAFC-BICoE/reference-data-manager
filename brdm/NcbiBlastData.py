@@ -2,117 +2,41 @@ from brdm.NcbiData import NcbiData
 from brdm.RefDataInterface import RefDataInterface
 import os, shutil
 import tempfile
-import ftplib
+import requests
 import re
 import logging.config
 import tarfile
 import time
 from distutils.dir_util import copy_tree
+from bs4 import BeautifulSoup
 
 
 class NcbiBlastData(NcbiData, RefDataInterface):
 
     def __init__(self, config_file):
         super(NcbiBlastData, self).__init__(config_file)
-
-        self._download_ftp = self.config['ncbi']['blast_db']['ftp']
-        self._ftp_dir = self.config['ncbi']['blast_db']['ftp_dir']
-        self._ncbi_user = self.config['ncbi']['blast_db']['ftp_user']
-        self._ncbi_passw = self.config['ncbi']['blast_db']['ftp_password']
-        self._info_file_name = self.config['ncbi']['blast_db']['info_file_name']
-
-        self.destination_dir = super(NcbiBlastData, self).destination_dir + self.config['ncbi']['blast_db']['destination_folder']
-        self.backup_dir = super(NcbiBlastData, self).backup_dir + self.config['ncbi']['blast_db'][
-            'destination_folder']
+        self.download_folder = self.config['ncbi']['blast_db']['download_folder']
+        self.info_file_name = self.config['ncbi']['blast_db']['info_file_name']
         try:
+            self.destination_dir = os.path.join(super(NcbiBlastData, self).destination_dir, \
+                                                self.config['ncbi']['blast_db']['destination_folder'])
+            self.backup_dir = os.path.join(super(NcbiBlastData, self).backup_dir, \
+                                           self.config['ncbi']['blast_db']['destination_folder'])
             if not os.path.exists(self.destination_dir):
-                os.makedirs(self.destination_dir)
-                os.chmod(self.destination_dir, int(folder_mode,8))
+                os.makedirs(self.destination_dir, mode = self.folder_mode)
             os.chdir(self.destination_dir)
             if not os.path.exists(self.backup_dir):
-                os.makedirs(self.backup_dir)
-                os.chmod(self.backup_dir, int(folder_mode,8))
+                os.makedirs(self.backup_dir, mode = self.folder_mode)
         except Exception as e:
-            logging.error("Failed to create the destination or backup_dir : {} with error {}".format(self.backup_dir, e))
+            logging.error("Failed to create destination/backup folder : {} {}".format(self.backup_dir, e))
 
-
-    @property
-    def destination_dir(self):
-        return self._destination_dir
-
-    @destination_dir.setter
-    def destination_dir(self, value):
-        self._destination_dir = value
-
-    @property
-    def backup_dir(self):
-        return self._backup_dir
-
-    @backup_dir.setter
-    def backup_dir(self, value):
-        self._backup_dir = value
-
-
-    # re-tries ftp connection. Returns connection handler or 0
-    def ftp_connect(self):
-        logging.info('Connecting to NCBI ftp: {} ...'.format(self._download_ftp))
-        retry_num = self.connection_retry_num
-        ftp = 0  # to make sure we don't get UnboundLocalError
-        while not self.test_existing_connection(ftp) and retry_num != 0:
-            try:
-                ftp = ftplib.FTP(self._download_ftp)
-                ftp.login(user=self._ncbi_user, passwd=self._ncbi_passw)
-                ftp.cwd(self._ftp_dir)
-            except Exception as e:
-                print("Error connecting to FTP: {} Retrying...".format(e))
-                time.sleep(self.sleep_time)
-                retry_num -= 1
-
-        return ftp
-
-
-    def test_connection(self):
-        connection_successful = False
-        try:
-            logging.info("Testing NCBI connection. FTP: {}".format(self._download_ftp))
-            ftp = ftplib.FTP(self._download_ftp)
-            ftp.login(user=self._ncbi_user, passwd=self._ncbi_passw)
-            ftp.cwd(self._ftp_dir)
-
-            # Just to check the connection. Does nothing
-            response = ftp.voidcmd('NOOP')
-
-            if response == '200 NOOP command successful':
-                connection_successful = True
-
-            ftp.quit()
-        except Exception as e:
-            logging.exception("Exception when testing connection: {}".format(e))
-            return False
-
-        return connection_successful
-
-
-    def test_existing_connection(self, ftp):
-        connection_successful = False
-        try:
-            # Just to check the connection. Does nothing
-            response = ftp.voidcmd('NOOP')
-
-            if response == '200 NOOP command successful':
-                connection_successful = True
-        except:
-            return False
-
-        return connection_successful
-
-
+    
     def update(self):
         logging.info("Executing NCBI Blast update")
-        # directory to do an intermediary download
+        # Download nrnt data into an intermediate folder
         try:
             #temp_dir = tempfile.mkdtemp(dir = self.destination_dir )
-            temp_dir = self.destination_dir + 'temp'
+            temp_dir = os.path.join(self.destination_dir, 'temp')
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
             os.makedirs(temp_dir)
@@ -120,26 +44,23 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         except Exception as e:
             logging.error("Failed to create the temp_dir: {}, error{}".format(temp_dir, e))
             return False
-        # Download and unzip into an intermediate folder
         success = self.download()
         if not success:
-            logging.error("Download failed. Update will not proceed.")
+            logging.error("Failed to download nrnt files. Update will not proceed.")
             return False
-        
+        # Change the file mode
         try:
             only_files = [f for f in os.listdir('.') if os.path.isfile(f)]
             for f in only_files:
-                os.chmod(f, int(file_mode,8))   
+                os.chmod(f, self.file_mode)   
         except Exception as e:
             logging.error("Failed to change file mode, error{}".format(e))
             return False
-        
-        
+        # Backup two readme files
         backup_success = self.backup()
         if not backup_success:
-            logging.error("Backup of reference data did not succeed. The update will not continue.")
+            logging.error("Failed to backup readme files. The update will not continue.")
             return False
-
         # Delete all data from the destination folder
         try:
             os.chdir(self.destination_dir)
@@ -155,219 +76,155 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             copy_tree(temp_dir, self.destination_dir) 
             shutil.rmtree(temp_dir)
         except Exception as e:
-            logging.error("Failed to copy file from temp dir to destination folder, error{}".format(e))
+            logging.error("Failed to copy file from temp to destination, error{}".format(e))
             return False
         
         return True
     
-
+    # Backup readme and readme+ file
     def backup(self):
         logging.info("Executing NCBI Blast backup")
-
         backup_folder = self.create_backup_dir()
         if not backup_folder:
-            logging.error("NCBI Blast Backup did not succeed.")
+            logging.error("Failed to create backup folder.")
             return False
-
         # Copy only README files for future reference
         app_readme_file = self.config['readme_file']
-        ncbi_readme_file = self._info_file_name
+        ncbi_readme_file = self.info_file_name
         try:
-            all_files = os.listdir(self.destination_dir)
-
-            if app_readme_file in all_files:
-                shutil.copy2(app_readme_file, backup_folder)
-            else:
-                logging.info("{} file could not be backed-up because it is not found.".format(app_readme_file))
-
-            if ncbi_readme_file in all_files:
-                shutil.copy2(ncbi_readme_file, backup_folder)
-            else:
-                logging.info("{} file could not be backed-up because it is not found.".format(app_readme_file))
+            shutil.copy2(app_readme_file, backup_folder)
+            shutil.copy2(ncbi_readme_file, backup_folder)
         except Exception as e:
             logging.exception("NCBI Blast Backup did not succeed. Error: {}".format(e))
             return False
+        return True
 
-        return backup_folder
-
-
-    # Deletes all blast database files. Directory structure will be preserved.
-    def delete(self):
-        ## TODO: finish, move to BaseRefData and use in update method here
-        all_files = os.listdir(self.destination_dir)
-
-        for file in all_files:
-            if os.path.isfile(file):
-                print("File")
-            else:
-                print("DIr")
 
     def restore(self):
         # 2018.05.28: As agreed upon, this feature will not be implemented.
         # There is no backup functionality for blast databases, therefore there is no restore.
         pass
-
-
-    # Download all nr / nt blast databases
-    def download(self, test_repeats=0):
-        download_start_time = time.time()
-        
-        ftp = self.ftp_connect()
-
-        if not self.test_existing_connection(ftp):
-            logging.error("Could not connect to NCBI ftp {}. Download will not continue.")
-            return False
-
-        ### Download
-        downloaded_files = []
-        files_download_failed = []
-
+    
+    # Unzip all of nrnt files
+    def unzip(self):
         try:
-            # Get list of files to download
-            all_files = ftp.nlst()
-
-            nr_nt_re = re.compile('(nr|nt)\.\d{2}\.tar\.gz$')
-
-            nr_nt_files = [file_name for file_name in all_files if nr_nt_re.match(file_name)]
-
-#success = self.download_ftp_file(short_file_name, ftp_link)
-            ### Download NCBI README file
-            #self.download_ftp_file(self._info_file_name, ftp)
-            with open(self._info_file_name, 'wb') as f:
-                ftp.retrbinary('RETR {}'.format(self._info_file_name), f.write, 1024)
-            
-            logging.info("get the list of files and downloaded readme file")
-           
-      
-            if test_repeats == 0:
-                test_repeats = len(nr_nt_files) + 2
-            for file in nr_nt_files:
-                if test_repeats > 0:
-                    test_repeats -= 1
-
-                    downloaded = self.download_blast_file(file,ftp)
-                    unzipped = False
-                    if downloaded:
-                        unzipped = self.unzip_file(file)
-                    if unzipped:
-                        downloaded_files.append(file)
-                    else:
-                        files_download_failed.append(file)
-                else:
-                    break
+            zipped_files = [f for f in os.listdir('.') if os.path.isfile(f)]
+            for file in zipped_files:
+                unzipped = self.unzip_file(file)
+                if not unzipped:
+                    logging.error("Failed to unzip {}".format(file))
+                    return False
                 
-            if self.test_existing_connection(ftp):
-                ftp.quit()
+            all_files = [f for f in os.listdir('.') if os.path.isfile(f)]
+            for f in all_files:
+                os.chmod(f, self.file_mode)   
                 
         except Exception as e:
-            logging.exception("Exception when trying to download and extract blast database from NCBI. Error: {}".format(e))
-            if self.test_existing_connection(ftp):
-                ftp.quit()
+            logging.error("Failed to unzip and change file mode, error{}".format(e))
             return False
+        return True
+    
+    # Parse the webpage of ncbi blast to get the list of nrnt files
+    def get_all_file(self, url):
+        result = []
+        try:
+            session_requests,connected = self.https_connect();
+            html = session_requests.get(url)
+            soup = BeautifulSoup(html.content, "html.parser")
+            nr_nt_re = re.compile('(nr|nt)\.\d{2}\.tar\.gz$')
+            links = soup.find_all('a')
+            for a_link in links:
+                file_name = a_link.string
+                if nr_nt_re.match(file_name):
+                    result.append(file_name)
+            session_requests.close()
+        except Exception as e:
+                logging.info("Failed to get the list of nrnt files: {}".format(e)) 
+        return result
 
-        if files_download_failed:
-            logging.info("Following files failed to be downloaded and/or un-archived: {}".format(files_download_failed))
 
+    # Download read me and all nrnt files
+    def download(self, download_file_number=0):
+        download_start_time = time.time()
+        max_download_attempts = self.download_retry_num
+        folder_url = os.path.join(self.login_url, self.download_folder)
+        # download read me
+        readme_success = False
+        attempt = 0
+        while attempt < max_download_attempts and not readme_success:
+            attempt += 1
+            try:
+                session_requests,connected = self.https_connect();
+                file_name_readme = self.info_file_name
+                file_url_readme = os.path.join(folder_url, file_name_readme)
+                readme_success = self.download_a_file(file_name_readme, file_url_readme, session_requests)
+                session_requests.close()
+            except Exception as e:
+                logging.info("Failed to download readme file on attempt {}: {}".format(attempt, e)) 
+                time.sleep(self.sleep_time)
+                
+        if not readme_success:
+            logging.error('Failed to download readme file')
+            return False
+        # get the list of nrnt files
+        all_file = self.get_all_file(folder_url)
+        downloaded_file = []
+        
+        if len(all_file) == 0:
+            logging.error("Failed to get the file list to download")
+            return False
+        
+        if download_file_number == 0:
+            download_file_number = len(all_file)
+        
+        attempt = 0
+        while attempt < max_download_attempts and len(downloaded_file) < download_file_number:
+            try:
+                session_requests,connected = self.https_connect();
+                attempt += 1
+                for file in all_file:
+                    if file not in downloaded_file:
+                        file_name_nrnt = file
+                        file_url_nrnt = os.path.join(folder_url, file_name_nrnt)
+                        file_name_md5 = file+".md5"
+                        file_url_md5 = os.path.join(folder_url, file_name_md5)
+                        file_success = self.download_a_file(file_name_nrnt, file_url_nrnt, session_requests)
+                        md5_success = self.download_a_file(file_name_md5, file_url_md5, session_requests)
+                        
+                        if file_success and md5_success:
+                            md5_code = self.read_md5(file_name_md5)
+                            md5_match = self.check_md5(file_name_nrnt, md5_code)
+                        if md5_match:
+                            downloaded_file.append(file)
+                            
+                    if len(downloaded_file) == download_file_number:
+                        break;
+                session_requests.close()    
+                
+            except Exception as e:
+                logging.exception("Errors in downloading nrnt files, retry... {}".format(e))
+                time.sleep(self.sleep_time)
+                
+        if len(downloaded_file) < download_file_number: 
+            logging.error("Failed. downloaded {} out of {} files".format(len(downloaded_file),download_file_number)) 
+            return False
+        
+        files_download_failed = []
         # Write application's README+ file
         comment = 'This folder contains a reference blast database (nr and nt datasets) downloaded from NCBI.'
-        self.write_readme(download_url='{}/{}'.format(self._download_ftp, self._ftp_dir),
-                          downloaded_files=downloaded_files, download_failed_files=files_download_failed,
+        self.write_readme(download_url='{}'.format(folder_url),
+                          downloaded_files=downloaded_file, download_failed_files=files_download_failed,
                           comment=comment, execution_time=(time.time() - download_start_time))
 
         return True
-
-
-
-    # Downloads a file and its corresponding .md5 file. Checks if md5 match.
-    def download_blast_file(self, short_file_name, ftp_link):
-        md5_file = '{}.md5'.format(short_file_name)
-        
-        success = self.download_ftp_file(md5_file, ftp_link)
-
-        if not success:
-            return False
-
+    
+    
+    def read_md5(self, md5_file):
         try:
             with open(md5_file, 'r') as f:
                 md5_file_contents = f.read()
-            md5_str = md5_file_contents.split(' ')[0]
+            md5_code = md5_file_contents.split(' ')[0]
             os.remove(md5_file)
         except Exception as e:
-            logging.exception('Could not download or read MD5 file for file {}. Download of this file will not proceed.'.format(short_file_name))
-            return False
-
-        success = self.download_ftp_file(short_file_name, ftp_link)
-
-        if not success:
-            return False
-
-        if not self.check_md5(short_file_name, md5_str):
-            logging.warning("MD5 check did not pass. Attempting re-downloading again.")
-            os.remove(short_file_name)
-            success = self.download_ftp_file(short_file_name, ftp_link)
-            if not success or not self.check_md5(short_file_name, md5_str):
-                logging.error("MD5 check did not pass. The file {} will be destroyed.".format(short_file_name))
-                return False
-
-        return True
-
-
-
-    def download_ftp_file(self, file_name, ftp_connection):
-        time.sleep(self.sleep_time)
-        download_success = False
-
-        if not self.test_existing_connection(ftp_connection):
-            ftp_connection = self.ftp_connect()
-
-        if self.test_existing_connection(ftp_connection):
-            max_download_attempts = self.download_retry_num
-            try:
-                ftp_file_size = ftp_connection.size(file_name)
-            except:
-                logging.error("Failed to check the size of the download. The file {} will not be downloaded.".format(
-                    file_name
-                ))
-                return False
-
-            #print('Original ftp file size:   {}'.format(ftp_connection.size(file_name)))
-
-            with open(file_name, 'wb') as file_obj:
-                while ftp_file_size != file_obj.tell():
-                    try:
-                        if file_obj.tell() != 0:
-                            #print('Downloaded local file size before re-try: {}'.format(file_obj.tell()))
-                            ftp_connection.retrbinary('RETR {}'.format(file_name), file_obj.write, rest=file_obj.tell())
-                        else:
-                            ftp_connection.retrbinary('RETR {}'.format(file_name), file_obj.write)
-                            #print('Downloaded local file size at end: {}'.format(file_obj.tell()))
-                    except (ftplib.error_temp, IOError) as e:
-                        print('Problems with ftp connection. Error: {}'.format(e))
-                        logging.warning('Problems with ftp connection. Error: {}'.format(e))
-                        if max_download_attempts != 0:
-                            print('Re-trying the download of file: {}'.format(file_name))
-                            logging.warning('Re-trying the download of file: {}'.format(file_name))
-                            time.sleep(self.sleep_time)  # sleep one second before re-trying
-                            ftp_connection = self.ftp_connect()
-                            max_download_attempts -= 1
-                            if not self.test_existing_connection(ftp_connection):
-                                logging.error("Connection could not be established.")
-                                return False
-                        else:
-                            logging.error('Failed to download file: {}'.format(file_name))
-                            return False
-                    except:
-                        logging.exception(
-                            'Something went wrong with the download of file: {} Re-download will not be attempted.'.format(
-                                file_name))
-                        os.remove(file_name)
-                        return False
-
-                if ftp_file_size == file_obj.tell():
-                    download_success = True
-                else:
-                    logging.error("Downloaded file size does not match it's size on FTP server. The file will be deleted.")
-                    os.remove(file_name)
-
-
-        return download_success
+            logging.error('Failed to get the md5_code {}.'.format(file_name))   
+        return md5_code
