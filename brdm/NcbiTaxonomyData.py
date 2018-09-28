@@ -32,18 +32,11 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
     
     def update(self):
         logging.info("Executing NCBI taxonomy update")
-        # Create a temp directory to do an intermediate download
-        try:
-            #temp_dir = tempfile.mkdtemp(dir = self.destination_dir )
-            temp_dir = os.path.join(self.destination_dir,'temp')
-            if os.path.exists(temp_dir):
-                shutil.rmtree(temp_dir)
-            os.makedirs(temp_dir)
-            os.chdir(temp_dir)
-        except Exception as e:
+        # Download files into the intermediate folder
+        temp_dir = self.create_tmp_dir(self.destination_dir)
+        if not temp_dir:
             logging.error("Failed to create the temp_dir: {}, error{}".format(temp_dir, e))
             return False
-        # Download files into the intermediate folder
         success = self.download()
         if not success:
             logging.error("Download failed. Update will not proceed.")
@@ -173,7 +166,7 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
                     line = line[:-3]
                     x = line.split("\t|\t")
                     tax_id, tax_name, species, genus, family, order, taxon_class,  phylum, kingdom, superkingdom = x
-                    taxonomy.write(tax_id+"\t"+tax_name+"\td_"+superkingdom+"; k_"+kingdom+"; p_"+phylum+"; c_"+taxon_class+"; o_"+order+"; f_"+family+"; g_"+genus+"; s_"+species+"\n")
+                    taxonomy.write(tax_id+"\t"+tax_name+"\td__"+superkingdom+"; k__"+kingdom+"; p__"+phylum+"; c__"+taxon_class+"; o__"+order+"; f__"+family+"; g__"+genus+"; s__"+species+"\n")
             taxonomy.close()   
         except Exception as e:
             logging.exception('Failed to format taxonomy file')

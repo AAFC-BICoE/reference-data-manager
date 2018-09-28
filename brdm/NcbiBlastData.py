@@ -34,14 +34,8 @@ class NcbiBlastData(NcbiData, RefDataInterface):
     def update(self):
         logging.info("Executing NCBI Blast update")
         # Download nrnt data into an intermediate folder
-        try:
-            #temp_dir = tempfile.mkdtemp(dir = self.destination_dir )
-            temp_dir = os.path.join(self.destination_dir, 'temp')
-            if os.path.exists(temp_dir):
-                shutil.rmtree(temp_dir)
-            os.makedirs(temp_dir)
-            os.chdir(temp_dir)
-        except Exception as e:
+        temp_dir = self.create_tmp_dir(self.destination_dir)
+        if not temp_dir:
             logging.error("Failed to create the temp_dir: {}, error{}".format(temp_dir, e))
             return False
         success = self.download()

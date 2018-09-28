@@ -156,3 +156,16 @@ class BaseRefData():
             return False
 
         return full_dir_name + '/'
+    
+    def create_tmp_dir(self, destination_path):
+        try:
+            #temp_dir = tempfile.mkdtemp(dir = self.destination_dir )
+            temp_dir = os.path.join(destination_path,'temp')
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
+            os.makedirs(temp_dir)
+            os.chdir(temp_dir)
+        except Exception as e:
+            logging.error("Failed to create the temp_dir: {}, error{}".format(temp_dir, e))
+            return False
+        return temp_dir
