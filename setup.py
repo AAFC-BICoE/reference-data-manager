@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="brdm",
-    version="0.1.7",
+    version="0.1",
 
     description='''Bioinformatics Reference Data Manager is an application used to download, backup and update of \
     reference data, required for various bioinformatics analysis''',
@@ -36,8 +36,8 @@ setup(
       },
 
     install_requires=[
-        'PyYAML',
-        'requests', ## This one also installs certifi, idna, urllib3, chardet and itself (requests)
+        'PyYAML==3.13',
+        'requests==2.19.1', ## This one also installs certifi, idna, urllib3, chardet and itself (requests)
       ],
 
 
