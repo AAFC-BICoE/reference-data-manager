@@ -5,6 +5,7 @@ from brdm.NcbiSubsetData import NcbiSubsetData
 from brdm.NcbiTaxonomyData import NcbiTaxonomyData
 from brdm.NcbiWholeGenome import NcbiWholeGenome
 from brdm.GreenGeneData import GreenGeneData
+from brdm.UniteData import UniteData
 from brdm import brdm_root
 
 
@@ -33,10 +34,13 @@ def parse_input_args(argv):
     parser.add_argument('--format-ncbi-subsets', help="format NCBI's subsets data to compatible with specific tools(qiime, mothur..)", dest="ncbi_subsets_format",
                         action = 'store_true',required=False)
     # NCBI whole genomes (e.g. genome sequences for bacteria, fungi )
-    parser.add_argument('--update-ncbi-wholeGenomes', help="Update NCBI whole genomes", dest="ncbi_whole_genome_update",
+    parser.add_argument('--update-ncbi-wholegenomes', help="Update NCBI whole genomes", dest="ncbi_whole_genome_update",
                         action = 'store_true', required=False)
     # Green gene
     parser.add_argument('--update-greengene', help="Update GreenGene data", dest="greengene_update",
+                        action = 'store_true', required=False)
+    # Unite data
+    parser.add_argument('--update-unitedata', help="Update unite data", dest="unitedata_update",
                         action = 'store_true', required=False)
     args = parser.parse_args(argv)
 
@@ -49,7 +53,8 @@ def parse_input_args(argv):
             args.ncbi_subsets_format or \
             args.ncbi_subsets_restore or \
             args.ncbi_whole_genome_update or \
-            args.greengene_update):
+            args.greengene_update or \
+            args.unitedata_update):
         parser.error('No action requested. Please add one of the required actions.')
 
     return args
@@ -89,22 +94,13 @@ def execute_script(input_args):
             ))
             
     if parsed_args.ncbi_taxonomy_restore:
-        print("Running NCBI Taxonomy restore %s " % parsed_args.ncbi_taxonomy_restore)
+        print("Running NCBI Taxonomy restore {} ".format(parsed_args.ncbi_taxonomy_restore))
         taxonomyData = NcbiTaxonomyData(config_file)
         success = taxonomyData.restore(parsed_args.ncbi_taxonomy_restore)
         if success:
             print("NCBI taxonomy data were restored successfully. It is located at: {}".format(
                 taxonomyData.destination_dir
             ))
-     
-    if parsed_args.ncbi_subsets_restore:
-        print("Restore NCBI subsets: {} ".format(parsed_args.ncbi_subsets_restore))
-        subsetData = NcbiSubsetData(config_file)
-        success = subsetData.restore(parsed_args.ncbi_subsets_restore)
-        if success:
-            print("NCBI subsets reference data were restored successfully. It is located at: {}".format(
-                subsetData.destination_dir
-            )) 
             
     if parsed_args.ncbi_subsets_update:
         print("Running NCBI Subsets update")
@@ -122,8 +118,17 @@ def execute_script(input_args):
         if success:
             print("NCBI subsets reference data were formated successfully. It is located at: {}".format(
                 subsetData.destination_dir
-            )) 
-                   
+            ))
+            
+    if parsed_args.ncbi_subsets_restore:
+        print("Restore NCBI subsets: {} ".format(parsed_args.ncbi_subsets_restore))
+        subsetData = NcbiSubsetData(config_file)
+        success = subsetData.restore(parsed_args.ncbi_subsets_restore)
+        if success:
+            print("NCBI subsets reference data were restored successfully. It is located at: {}".format(
+                subsetData.destination_dir
+            ))
+                          
     if parsed_args.ncbi_whole_genome_update:
         print("Running NCBI whole genome update")
         wholeGenomeData = NcbiWholeGenome(config_file)
@@ -140,8 +145,16 @@ def execute_script(input_args):
         if success:
             print("GreenGene data were updated successfully. It is located at: {}".format(
                 greengene.destination_dir
-            )) 
-            
+            ))
+             
+    if parsed_args.unitedata_update:
+        print("Running unite update")
+        unitedata = UniteData(config_file)
+        success = unitedata.update()
+        if success:
+            print("unite data were updated successfully. It is located at: {}".format(
+                unitedata.destination_dir
+            ))       
 def main():
     execute_script(sys.argv[1:])
 

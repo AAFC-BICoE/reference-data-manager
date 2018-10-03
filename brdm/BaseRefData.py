@@ -6,6 +6,7 @@ from hashlib import md5
 from datetime import timedelta
 import tarfile
 import gzip
+import zipfile
 
 
 class BaseRefData():
@@ -79,14 +80,21 @@ class BaseRefData():
             
         if filename_in.endswith("tar.gz"):
             try:
-                tar = tarfile.open(filename_in, "r:gz")
-                tar.extractall()
-                tar.close()
+                with tarfile.open(filename_in, "r:gz") as tar:
+                    tar.extractall()
                 self.delete_file(filename_in)
             except Exception as e:
                 logging.exception("Failed to exctract file {}. Error: {}".format(filename_in, e))
                 return False
-
+        
+        if filename_in.endswith(".zip"):
+            try:
+                with zipfile.ZipFile(filename_in,'r') as zip:
+                    zip.extractall()
+                self.delete_file(filename_in)
+            except Exception as e:
+                logging.exception("Failed to exctract file {}. Error: {}".format(filename_in, e))
+                return False
         return True
 
 
@@ -157,6 +165,8 @@ class BaseRefData():
 
         return full_dir_name + '/'
     
+    # Create an intermediate dir for holding updated new data
+    # The data will be move to destination dir if download successful
     def create_tmp_dir(self, destination_path):
         try:
             #temp_dir = tempfile.mkdtemp(dir = self.destination_dir )
@@ -169,3 +179,31 @@ class BaseRefData():
             logging.error("Failed to create the temp_dir: {}, error{}".format(temp_dir, e))
             return False
         return temp_dir
+    
+    # Clean the old files in the destination dir 
+    def clean_destination_dir(self, destination_path, update):
+        try:
+            os.chdir(destination_path)
+            for f in os.listdir("."):
+                if os.path.isfile(f):
+                    os.remove(f)
+                if update:
+                    if os.path.isdir(f) and f != 'temp':
+                        shutil.rmtree(f)
+                else:
+                    if os.path.isdir(f):
+                        shutil.rmtree(f)
+        except Exception as e:
+            logging.error("Failed to remove files in destination folder, error{}".format(e))
+            return False
+        return True
+    
+    # Check the restore directory
+    def check_restore_dir(self, restore_path):
+        if not os.path.exists(restore_path):
+            logging.error("could not restore, {} does not exist ".format(restore_path))
+            return False
+        if len(os.listdir(restore_path) ) == 0:
+            logging.error("could not restore, {} is an empty folder ".format(restore_path))
+            return False
+        return True

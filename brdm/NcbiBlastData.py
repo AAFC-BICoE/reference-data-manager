@@ -50,19 +50,16 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         except Exception as e:
             logging.error("Failed to change file mode, error{}".format(e))
             return False
+        
         # Backup two readme files
         backup_success = self.backup()
         if not backup_success:
             logging.error("Failed to backup readme files. The update will not continue.")
             return False
         # Delete all data from the destination folder
-        try:
-            os.chdir(self.destination_dir)
-            only_files = [f for f in os.listdir('.') if os.path.isfile(f)]
-            for f in only_files:
-                os.remove(f)
-        except Exception as e:
-            logging.error("Failed to remove old files from destination folder, error{}".format(e))
+        clean_destination_ok = self.clean_destination_dir(self.destination_dir, True)
+        if not clean_destination_ok:
+            logging.error("Failed to remove old files from destination folder")
             return False
         # Copy data from intermediate folder to destination folder
         # Delete intermediate folder

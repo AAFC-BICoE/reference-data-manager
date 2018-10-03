@@ -42,23 +42,11 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
             logging.error("Download failed. Update will not proceed.")
             return False
         # Format the taxonomy file and remove unwanted files
+        # and change file mode
         format_success = self.format_taxonomy(self.taxonomy_file) 
         if not format_success:
             logging.error("Failed to format taxonomy file")
             return False
-        app_readme_file = self.config['readme_file']
-        ncbi_readme_file = self.info_file_name
-        taxonomy_file = self.taxonomy_file+".txt"
-        try:
-            only_files = [f for f in os.listdir(".") if os.path.isfile(f)]
-            for f in only_files:
-                if not f==app_readme_file and not f==ncbi_readme_file and not f==taxonomy_file:
-                    os.remove(f)
-                else:
-                    os.chmod(f, self.file_mode)
-        except Exception as e:
-            logging.error("Failed to remove unwanted files, error:{}".format(e))
-            return False  
         # Backup the files
         backup_success = self.backup()
         if not backup_success:
@@ -66,17 +54,16 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
             return False
         # Delete old files from the destination folder
         # Copy new files from intermediate folder to destination folder
+        clean_destination_ok = self.clean_destination_dir(self.destination_dir, True)
+        if not clean_destination_ok:
+            return False
         try:
-            os.chdir(self.destination_dir)
-            only_files = [f for f in os.listdir(".") if os.path.isfile(f)]
-            for f in only_files:
-                os.remove(f)
             copy_tree(temp_dir, self.destination_dir)
             shutil.rmtree(temp_dir)
         except Exception as e:
-            logging.error("Failed to move files from temp to destination, error{}".format(e))
+            logging.error("Failed to move files from temp_dir to destination folder, error{}".format(e))
             return False
-    
+        
         return True
     
     # Download taxonomy database
@@ -159,7 +146,7 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
         taxonomy_file = filename+".txt"
         try:
             taxonomy = open(taxonomy_file,"w")
-            taxonomy.write("taxon_id\ttaxon_name\td_domain; k_kingdom; p_phylum; c_class; o_order; f_family; g_genus; s_species\n")
+            taxonomy.write("taxon_id\ttaxon_name\td__domain; k__kingdom; p__phylum; c__class; o__order; f__family; g__genus; s__species\n")
             with open(dmp_file) as fp:
                 content = fp.readlines()
                 for line in content:
@@ -170,6 +157,20 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
             taxonomy.close()   
         except Exception as e:
             logging.exception('Failed to format taxonomy file')
+            return False
+        # remove unwanted file and change file mode
+        app_readme_file = self.config['readme_file']
+        ncbi_readme_file = self.info_file_name
+        taxonomy_file = self.taxonomy_file+".txt"
+        try:
+            only_files = [f for f in os.listdir(".") if os.path.isfile(f)]
+            for f in only_files:
+                if not f==app_readme_file and not f==ncbi_readme_file and not f==taxonomy_file:
+                    os.remove(f)
+                else:
+                    os.chmod(f, self.file_mode)
+        except Exception as e:
+            logging.error("Failed to remove unwanted files, error:{}".format(e))
             return False
         
         return True
@@ -194,23 +195,25 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
         
         return True
 
-
     def restore(self, folder_name):
         logging.info("Executing NCBI taxonomy restore {} ".format(folder_name))
         # check the restore folder, return false if not exist or empty folder
-        restore_folder = os.path.join(self.backup_dir, folder_name)
-        if not os.path.exists(restore_folder):
-            logging.error("could not restore, {} does not exist ".format(folder_name))
+        try:
+            restore_folder = os.path.join(self.backup_dir, folder_name)
+            restore_folder_ok = self.check_restore_dir(restore_folder)
+            if not restore_folder_ok:
+                return False
+            # remove all the file in destination_dir 
+            clean_destination_ok = self.clean_destination_dir(self.destination_dir, False)
+            if not clean_destination_ok:
+                return False 
+            # copy the all the files in backup_dir/folder_name to destination_dir    
+            os.chdir(restore_folder)
+            for filename in os.listdir(restore_folder):
+                shutil.copy2(filename, self.destination_dir) 
+        
+        except Exception as e:
+            logging.exception("NCBI taxonomy restore did not succeed. Error: {}".format(e))
             return False
-        if len(os.listdir(restore_folder) ) == 0:
-            logging.error("could not restore, {} is an empty folder ".format(folder_name))
-            return False
-        # remove all the file in destination_dir  
-        current_files = [f for f in os.listdir(self.destination_dir) if os.path.isfile(f)]
-        for filename in current_files:
-            os.remove(filename)
-        # copy the all the files in backup_dir/folder_name to destination_dir    
-        os.chdir(restore_folder)
-        for filename in os.listdir(restore_folder):
-            shutil.copy2(filename, self.destination_dir) 
-   
+        
+        return True
