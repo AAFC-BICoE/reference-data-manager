@@ -64,11 +64,10 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
 
         # Delete old files from the destination folder
         # Copy new files from intermediate folder to destination folder
+        clean_destination_ok = self.clean_destination_dir(self.destination_dir, True)
+        if not clean_destination_ok:
+            return False
         try:
-            os.chdir(self.destination_dir)
-            only_files = [f for f in os.listdir(".") if os.path.isfile(f)]
-            for f in only_files:
-                os.remove(f)
             copy_tree(temp_dir, self.destination_dir)
             shutil.rmtree(temp_dir)
         except Exception as e:
@@ -197,38 +196,22 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
     # Retrieve and format sequence and taxonomy data
     def restore(self, folder_name):
         logging.info("Executing NCBI subsets restore {} ".format(folder_name))
-        # Check the restore folder, return false if not exist or empty folder
+        # check the restore folder, return false if not exist or empty folder
         try:
             restore_folder = os.path.join(self.backup_dir, folder_name)
-            if not os.path.exists(restore_folder):
-                logging.error("could not restore, {} does not exist ".format(folder_name))
+            restore_folder_ok = self.check_restore_dir(restore_folder)
+            if not restore_folder_ok:
                 return False
-            if len(os.listdir(restore_folder) ) == 0:
-                logging.error("could not restore, {} is an empty folder ".format(folder_name))
-                return False
-        except Exception as e:
-            logging.error("Failed to check the restore folder. Error: {}".format(e))
-            return False 
-        
-        # Remove all the file in destination_dir
-        # Copy the all the files in backup_dir/folder_name to destination_dir
-        logging.info("copy data from restore folder to destination folder")
-        try:
-            os.chdir(self.destination_dir)
-            #only_files = [f for f in os.listdir(".") if os.path.isfile(f)]
-            for f in os.listdir("."):
-                if os.path.isfile(f):
-                    os.remove(f)
-                if os.path.isdir(f) and f != 'temp':
-                    shutil.rmtree(f)
-                    
-            #current_files = [f for f in os.listdir(self.destination_dir) if os.path.isfile(f)]
-            #for filename in current_files:
-            #    os.remove(filename)    
+            # remove all the file in destination_dir 
+            clean_destination_ok = self.clean_destination_dir(self.destination_dir, False)
+            if not clean_destination_ok:
+                return False 
+            # copy the all the files in backup_dir/folder_name to destination_dir    
             os.chdir(restore_folder)
             for filename in os.listdir(restore_folder):
                 shutil.copy2(filename, self.destination_dir)
             os.chdir(self.destination_dir)
+            
         except Exception as e:
             logging.error("Failed to copy files. Error: {}".format(e))
             return False 
@@ -343,12 +326,9 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
                     sequence_file.write(">"+accID+"\n")
                     sequence_file.write(textwrap.fill(sequence, width=self.line_width)+"\n")
                     if int(taxID) in taxid_to_rank:
-                        #taxon_file.write(accID+"  "+",".join(taxid_to_rank[int(taxID)])+"\n")
                         taxon_file.write(accID+"\t"+taxid_to_rank[int(taxID)]+"\n")
-                        #print(accID+"\t"+taxID) 
                     else:
                         logging.info("CANNOT find taxonomy\t"+ accID+"\t"+taxID)
-                        #print("CANNOT find taxonomy\t"+ accID+"\t"+taxID)
                         taxId_no_name+=1
             logging.info("total taxID without taxonInfo:{}".format(taxId_no_name))   
             print("total taxID without taxonInfo:\t",taxId_no_name)
@@ -437,12 +417,10 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
                             a_line = a_level[3:]
                         if a_level[3:] and a_line:
                             a_line = a_line+";"+a_level[3:]
-                        #a_level = a_level[2:]
-                    #a_line = ";".join(levels[1:])
                     a_line = a_line+";"
                     mothur_taxon_file.write(tax_id+"\t"+a_line+"\n")
             mothur_taxon_file.close()
-                   
+            os.chmod(mothur_taxon_name, self.file_mode)      
         except Exception as e:
             logging.error("failed to get mothur format, error {} ".format(e))
             return False

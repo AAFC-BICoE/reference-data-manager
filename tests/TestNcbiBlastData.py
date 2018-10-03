@@ -1,8 +1,9 @@
 import unittest
-from brdm.NcbiBlastData import NcbiBlastData
 import os, shutil
 import ftplib
-
+parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.sys.path.insert(0,parentdir)
+from brdm.NcbiBlastData import NcbiBlastData
 class TestNcbiBlastData(unittest.TestCase):
 
     @classmethod
@@ -26,8 +27,7 @@ class TestNcbiBlastData(unittest.TestCase):
     
     def test_testConnection(self):
         self.assertTrue(self.fixture.test_connection(), 'Could not connect to NCBI ftp: {}'.format(self.fixture._download_ftp))
-
-    
+    '''
     def testDownload(self):
 
         #success = self.fixture.download()
@@ -62,13 +62,13 @@ class TestNcbiBlastData(unittest.TestCase):
                         "md5 file should have been removed.")
         self.assertFalse(os.path.isfile(self.fixture.destination_dir + 'nr.00.tar.gz'),
                         "tar.gz file should have been removed.")
-    
-    
+    '''
+    '''
     def test_update(self):
         success = self.fixture.update()
 
         self.assertTrue(success, "NCBI update did not return True.")
-        
+    '''   
 
     '''
     def test_download_blast_file(self):
@@ -82,20 +82,15 @@ class TestNcbiBlastData(unittest.TestCase):
         #self.assertTrue(os.path.isfile(self.fixture.destination_dir + file_name), "File was not downloaded.")
 
     '''
-
+    '''
     def test_backup(self):
-        '''
-        # Test when there is nothing to backup
-        backup_folder = self.fixture.backup()
-        self.assertFalse(backup_folder)
-        '''
         
         self.fixture.download(test_repeats=1)
         backup_folder = self.fixture.backup()
         self.assertTrue(backup_folder)
         self.assertTrue(os.path.isfile(backup_folder + 'README'), "No README found.")
         self.assertTrue(os.path.isfile(backup_folder + 'README+'), "No README+ found.")
-        
+    '''    
     
     def test_download_ftp_file(self):
         # Small files to test with: nr.80, nt.53
@@ -103,9 +98,13 @@ class TestNcbiBlastData(unittest.TestCase):
 
         ftp = self.fixture.ftp_connect()
         if ftp:
-            file_name = 'nt.53.tar.gz'
+            file_name = 'nt.53.tar.gz.md5'
             self.fixture.download_ftp_file(file_name, ftp)
             self.assertTrue(os.path.isfile(self.fixture.destination_dir + file_name), "File was not downloaded.")
             ftp.quit()
         else:
             print('Could not connect to NCBI. The test was not run.')
+            
+
+if __name__ == '__main__':
+    unittest.main() 

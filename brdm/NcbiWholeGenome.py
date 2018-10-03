@@ -41,22 +41,27 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
         if not success:
             logging.error("Download failed. Update will not proceed.")
             return False
+         # Change the mode of the files
+        try:
+            only_files = [f for f in os.listdir('.') if os.path.isfile(f)]
+            for f in only_files:
+                os.chmod(f, self.file_mode)   
+        except Exception as e:
+            logging.error("Failed to change file mode, error{}".format(e))
+            return False
         # Backup the files a file with links of whole genomes 
         backup_success = self.backup()
         if not backup_success:
             logging.error("Backup of reference data did not succeed. The update will not continue.")
             return False
+        
         # Delete old files from the destination folder
         # Copy new files from intermediate folder to destination folder
+        clean_destination_ok = self.clean_destination_dir(self.destination_dir, True)
+        if not clean_destination_ok:
+            return False
         try:
-            os.chdir(self.destination_dir)
-            #only_files = [f for f in os.listdir(".") if os.path.isfile(f)]
-            for f in os.listdir("."):
-                if os.path.isfile(f):
-                    os.remove(f)
-                if os.path.isdir(f) and f != 'temp':
-                    shutil.rmtree(f)
-            copy_tree(temp_dir, self.destination_dir) 
+            copy_tree(temp_dir, self.destination_dir)
             shutil.rmtree(temp_dir)
             for f in os.listdir("."):
                 if os.path.isdir(f):
@@ -64,10 +69,8 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
         except Exception as e:
             logging.error("Failed to move files from temp_dir to destination folder, error{}".format(e))
             return False
-        
         return True
         
-    
     # Download taxonomy database
     def download(self, download_file_number = 3):
         logging.info("Executing NCBI whole genome download")
@@ -92,7 +95,8 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
         if not readme_success:
             logging.error('Failed to download readme file after all attempts')
             return False
-                
+         
+        downloaded_file = []       
         for a_set in self.species:
             folder_name = a_set
             try:
@@ -112,6 +116,7 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
                     summary_url = os.path.join(self.login_url, self.download_folder, a_set, self.download_file)
                     summary_success = self.download_a_file(self.download_file, summary_url, session_requests)
                     file_list = self.parse_assembly_summary(self.download_file)
+                    session_requests.close()
                 except Exception as e:
                     logging.info("Failed to download summary of {} on attempt {}: {}".format(a_set,attempt, e)) 
                     time.sleep(self.sleep_time)
@@ -121,7 +126,7 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
               
         
             attempt = 0
-            downloaded_file = []
+            
         
             if len(file_list) == 0:
                 logging.error("Failed to get the file list to download")
@@ -129,7 +134,7 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
         
             if download_file_number == 0:
                 download_file_number = len(file_list)
-                
+            downloaded = 0   
             completed = False
             while attempt < max_download_attempts and completed == False:
                 attempt += 1
@@ -149,8 +154,9 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
                             if a_file_success:
                                 unzip_success = self.unzip_file(file_name)
                             if unzip_success:
+                                downloaded += 1
                                 downloaded_file.append(a_set+"\t"+file_url)
-                            if len(downloaded_file) == download_file_number:
+                            if downloaded == download_file_number:
                                 completed = True
                                 break;
                 except Exception as e:
@@ -158,8 +164,16 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
                     time.sleep(self.sleep_time)
                     
             if completed:
-                os.chdir('..')
-                session_requests.close()
+                try:
+                    only_files = [f for f in os.listdir('.') if os.path.isfile(f)]
+                    for f in only_files:
+                        os.chmod(f, self.file_mode)
+                    os.chdir('..')
+                    session_requests.close()
+                except Exception as e:
+                    logging.error("Failed to change file mode")
+                    return False
+                
             
             if not completed:
                 logging.info("Failed to download all file in {} after all attempts".format(a_set)) 
@@ -236,7 +250,7 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
         
         return True
 
-
+    '''
     def restore(self, folder_name):
         logging.info("Executing NCBI wholegenome restore {} ".format(folder_name))
         # check the restore folder, return false if not exist or empty folder
@@ -299,11 +313,5 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
         return True
         
         #from readme+ file get 
-    def check_restore_folder(self, folder_name):
-        if not os.path.exists(restore_folder):
-            logging.error("could not restore, {} does not exist ".format(folder_name))
-            return False
-        if len(os.listdir(restore_folder) ) == 0:
-            logging.error("could not restore, {} is an empty folder ".format(folder_name))
-            return False
-        return True
+    
+    '''

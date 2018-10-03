@@ -1,6 +1,8 @@
 import unittest
-from brdm.NcbiData import NcbiData
 import os, shutil
+parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.sys.path.insert(0,parentdir)
+from brdm.NcbiData import NcbiData
 
 class TestNcbiData(unittest.TestCase):
 
@@ -18,3 +20,5 @@ class TestNcbiData(unittest.TestCase):
         expected_dir = os.path.abspath('../../../out/test/ncbi/')+'/'
         self.assertEqual(self.fixture.destination_dir, expected_dir)
 
+if __name__ == '__main__':
+    unittest.main()
