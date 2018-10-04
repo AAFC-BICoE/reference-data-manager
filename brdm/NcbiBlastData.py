@@ -134,8 +134,8 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         return result
 
 
-    # Download read me and all nrnt files
-    def download(self, download_file_number=0):
+    # Download read me and all the nrnt files
+    def download(self, download_file_number=3):
         download_start_time = time.time()
         max_download_attempts = self.download_retry_num
         folder_url = os.path.join(self.login_url, self.download_folder)
@@ -175,6 +175,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                 attempt += 1
                 for file in all_file:
                     if file not in downloaded_file:
+                        download_success = False
                         file_name_nrnt = file
                         file_url_nrnt = os.path.join(folder_url, file_name_nrnt)
                         file_name_md5 = file+".md5"
@@ -182,10 +183,9 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                         file_success = self.download_a_file(file_name_nrnt, file_url_nrnt, session_requests)
                         md5_success = self.download_a_file(file_name_md5, file_url_md5, session_requests)
                         
-                        if file_success and md5_success:
-                            md5_code = self.read_md5(file_name_md5)
-                            md5_match = self.check_md5(file_name_nrnt, md5_code)
-                        if md5_match:
+                        download_success = self.checksum(file_name_md5, file_name_nrnt)
+                        
+                        if downloaded_success:
                             downloaded_file.append(file)
                             
                     if len(downloaded_file) == download_file_number:
@@ -209,13 +209,20 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
         return True
     
-    
-    def read_md5(self, md5_file):
+    # Check the correctness of the downloaded file
+    def checksum(self, md5_file, file_name):
         try:
             with open(md5_file, 'r') as f:
                 md5_file_contents = f.read()
-            md5_code = md5_file_contents.split(' ')[0]
+            md5_str = md5_file_contents.split(' ')[0]
             os.remove(md5_file)
         except Exception as e:
-            logging.error('Failed to get the md5_code {}.'.format(file_name))   
-        return md5_code
+            logging.exception('Could not read MD5 file {}. Try to download the file again'.format(file_name))
+            return False
+        
+        if not self.check_md5(file_name, md5_str):
+            logging.warning("MD5 check did not pass. Try to download the file again.")
+            return False
+
+        return True
+    
