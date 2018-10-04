@@ -135,7 +135,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
 
 
     # Download read me and all the nrnt files
-    def download(self, download_file_number=3):
+    def download(self, download_file_number=0):
         download_start_time = time.time()
         max_download_attempts = self.download_retry_num
         folder_url = os.path.join(self.login_url, self.download_folder)
@@ -185,7 +185,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                         
                         download_success = self.checksum(file_name_md5, file_name_nrnt)
                         
-                        if downloaded_success:
+                        if download_success:
                             downloaded_file.append(file)
                             
                     if len(downloaded_file) == download_file_number:
