@@ -73,15 +73,17 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
         except Exception as e:
             logging.error("Failed to move files from temp_dir to destination folder, error{}".format(e))
             return False
+        
         # Get fasta file and taxonomy file for each subsets based on accID
         subsets_list = self.get_subset_list()
         retrieve_success = self.accID_to_info(subsets_list)
         if not retrieve_success:
             logging.error("Failed: accID to fasta and taxonomy ")
             return False
-    
-        return True
         
+        return True
+     
+    # Backup accID files and README+ file
     def backup(self):
         logging.info("Executing NCBI subsets backup")
         backup_folder = self.create_backup_dir()
@@ -153,7 +155,7 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
         totalID = 0
         for start in range(0, count, batch_size):
             end = min(count, start+batch_size)
-            logging.info("Going to download record {} to {}".format(start+1, end))
+            logging.info("Going to download record {} to {}, total record {}".format(start+1, end, count))
             attempt = 0
             again = True
             while attempt < max_attemp and again:
@@ -164,22 +166,25 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
                                          webenv=webenv, query_key=query_key,
                                          idtype="acc")
                     again = False
-                except HTTPError as err:
-                    if 500 <= err.code <= 599:
-                        logging.error("Received error from server %s" % err)
-                        logging.error("Attempt %i of %s" % (attempt,max_attemp))
-                        time.sleep(self.sleep_time)
-                    else:
-                        raise  
-            try:
-                search_results = Entrez.read(search_handle)
-                acc_list = search_results["IdList"]
-                totalID = totalID + len(acc_list)
-                acc_str = "\n".join(acc_list)
-                accID_file.write(acc_str+"\n")
-            except Exception as e:
-                logging.error("Cannot write to file {}. Error: {}".format(accID_file,e))
-                return False 
+                except Exception as e:
+                    logging.error("Received error {}".format(e))
+                    logging.error("Attempt {} of {}".format(attempt,max_attemp))
+                    time.sleep(self.sleep_time)
+            
+            if again:
+                logging.error("Failed to get the record {} to {}".format(start+1, end))
+                return False
+            
+            if not again:
+                try:
+                    search_results = Entrez.read(search_handle)
+                    acc_list = search_results["IdList"]
+                    totalID = totalID + len(acc_list)
+                    acc_str = "\n".join(acc_list)
+                    accID_file.write(acc_str+"\n")
+                except Exception as e:
+                    logging.error("Cannot write to file {}. Error: {}".format(accID_file_name,e))
+                    return False 
         try:
             accID_file.close()
         except Exception as e:
@@ -191,9 +196,11 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
             return False
         
         return True
+
     
-    # Restore accID file from a backup folder
-    # Retrieve and format sequence and taxonomy data
+    
+    # Restore accID file from a backup folder, 
+    # Retrieve sequences and taxonomy from accID
     def restore(self, folder_name):
         logging.info("Executing NCBI subsets restore {} ".format(folder_name))
         # check the restore folder, return false if not exist or empty folder
@@ -226,13 +233,23 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
         if not retrieve_success:
             logging.error("Failed: accID to fasta and taxonomy ")
             return False
-        logging.info("format data")
-        format_success = self.format(subsets_list)
-        if not format_success:
-            logging.error("Failed: format data")
-            return False
+
         return True
-     
+    
+    # Get the list of subsets in the destination dir. Required in the method format
+    def get_subset_list_format(self):
+        list = []
+        try:
+            current_files = [f for f in os.listdir(self.destination_dir) if os.path.isdir(f)]
+            for filename in current_files:
+                list.append(filename)
+        except Exception as e:
+            logging.error("Failed to get a list of accID_file for formatting. Error: {}".format(e))
+            list = []
+            return list
+        
+        return list   
+        
     # Get the list of subsets in the destination_dir. Required in the method restore
     def get_subset_list_restore(self):
         list = []
@@ -273,18 +290,22 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
                 os.makedirs(a_subset_folder, mode = self.folder_mode)
                 shutil.move(os.path.join(self.destination_dir,accID_file), os.path.join(a_subset_folder,accID_file))
                 os.chdir(a_subset_folder)
+                print(a_subset_folder)
                 command = "blastdbcmd -db "+self.path_to_nt+ "  -target_only  -entry_batch " + accID_file + " -outfmt \"%a %T %s\" -out "+sequence_file+".tmp"
                 os.system(command)
+                print(command)
             except Exception as e:
                 logging.error("Failed to retrieve {} fasta sequence from nt ".format(subset_file_name))
                 return False
+            
             try:
                 self.get_taxonomy(sequence_file,taxon_file)
                 os.chmod(sequence_file, self.file_mode)
                 os.chmod(taxon_file, self.file_mode)
             except Exception as e:
                 logging.error("Failed to retrieve {} taxonomy ".format(subset_file_name))
-                return False  
+                return False
+            
         return True
     
     
@@ -314,19 +335,19 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
             taxon_file = open(taxon_file_name, "w")
             taxid_to_rank = self.parse_ranks(self.path_to_taxonomy)
         except Exception as e:
-                logging.error("failed to load taxonomyRank file, error {} ".format(e))
-                raise
+            logging.error("failed to load taxonomyRank file, error {} ".format(e))
+            raise
         
         try:    
             taxId_no_name = 0
             with open(sequence_file_name+".tmp") as f:
                 content = f.readlines()
                 for line in content:
-                    accID, taxID, sequence = line.split()
-                    sequence_file.write(">"+accID+"\n")
-                    sequence_file.write(textwrap.fill(sequence, width=self.line_width)+"\n")
+                    accID, taxID, sequence = line.split() 
                     if int(taxID) in taxid_to_rank:
                         taxon_file.write(accID+"\t"+taxid_to_rank[int(taxID)]+"\n")
+                        sequence_file.write(">"+accID+"\n")
+                        sequence_file.write(textwrap.fill(sequence, width=self.line_width)+"\n")
                     else:
                         logging.info("CANNOT find taxonomy\t"+ accID+"\t"+taxID)
                         taxId_no_name+=1
@@ -336,15 +357,12 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
             taxon_file.close()
             os.remove(sequence_file_name+".tmp")   
         except Exception as e:
-                logging.error("failed to get taxonomy, error {} ".format(e))
-                raise
+            logging.error("failed to get taxonomy, error {} ".format(e))
+            raise
      
-    def format(self, *args):
-        if len(args)==0:
-            subsets_list = self.get_subset_list()
-        if len(args)==1:
-            subsets_list = args[0]
-            
+     
+    def format(self):
+        subsets_list = self.get_subset_list_format()
         if len(subsets_list) == 0 :
             logging.error("Failed to get accID_file ")
             return False
@@ -362,6 +380,14 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
             if not mothur:
                 logging.error("Failed to get mothur format {} ".format(subset_file_name))
                 return False
+            qiime2 = self.to_qiime2_format(a_subset_folder, sequence_file, taxon_file, subset_file_name)
+            if not qiime2:
+                logging.error("Failed to get qiime2 format {} ".format(subset_file_name))
+                return False
+            q1_rdp = self.to_qiime1_rdp_format(a_subset_folder, sequence_file, taxon_file)
+            if not q1_rdp:
+                logging.error("Failed to get qiime1_rdp format {} ".format(subset_file_name))
+                return False
             
         return True
     
@@ -370,11 +396,13 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
         try:
             qiime1_folder = os.path.join(a_subset_folder, 'Qiime1')
             qiime1_taxon_name = os.path.join(qiime1_folder, taxon_file)
+            qiime1_sequence_name = os.path.join(qiime1_folder,sequence_file)
             if os.path.exists(qiime1_folder):
                 shutil.rmtree(qiime1_folder)
             os.makedirs(qiime1_folder, mode = self.folder_mode)
             os.chdir(qiime1_folder)
-            os.symlink(os.path.join(a_subset_folder,sequence_file), os.path.join(qiime1_folder,sequence_file))
+            
+            os.symlink(os.path.join(a_subset_folder,sequence_file), qiime1_sequence_name)
             qiime1_taxon_file = open(qiime1_taxon_name, "w")     
             with open(os.path.join(a_subset_folder,taxon_file)) as fp:
                 content = fp.readlines()
@@ -387,9 +415,75 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
                     qiime1_taxon_file.write(acc_id+"\t"+a_line+"\n")
             qiime1_taxon_file.close()
             os.chmod(qiime1_taxon_name, self.file_mode)
-                   
+            os.chmod(qiime1_sequence_name, self.file_mode)       
         except Exception as e:
             logging.error("failed to get qiime1 format, error {} ".format(e))
+            return False
+        return True
+    
+    
+    def to_qiime2_format(self,a_subset_folder, sequence_file, taxon_file, subset_file):
+        try:
+            qiime1_folder = os.path.join(a_subset_folder, 'Qiime1')
+            qiime2_folder = os.path.join(a_subset_folder, 'Qiime2')
+            if os.path.exists(qiime2_folder):
+                shutil.rmtree(qiime2_folder)
+            os.makedirs(qiime2_folder, mode = self.folder_mode)
+            os.chdir(qiime2_folder)
+            input_taxon_name = os.path.join(qiime1_folder, taxon_file)
+            output_taxon_name = os.path.join(qiime2_folder, subset_file)+"_taxon.qza"
+            input_sequence_name = os.path.join(a_subset_folder,sequence_file)
+            output_sequence_name = os.path.join(qiime2_folder, subset_file)+"_fasta.qza"
+            
+            sklearn_classifier_name = os.path.join(qiime2_folder, subset_file)+"_sklearn_classifier.qza"
+            command1 = "qiime tools import \
+                        --type 'FeatureData[Sequence]' \
+                        --input-path "+input_sequence_name+ " \
+                        --output-path "+ output_sequence_name
+            os.system(command1)
+            command2 = "qiime tools import \
+                        --type 'FeatureData[Taxonomy]' \
+                        --source-format HeaderlessTSVTaxonomyFormat \
+                        --input-path "+ input_taxon_name+ " \
+                        --output-path "+ output_taxon_name
+            os.system(command2)
+            command3 = "qiime feature-classifier fit-classifier-naive-bayes \
+                      --i-reference-reads "+output_sequence_name +" \
+                      --i-reference-taxonomy "+output_taxon_name +" \
+                      --o-classifier "+sklearn_classifier_name
+            os.system(command3)     
+            os.chmod(output_taxon_name, self.file_mode)
+            os.chmod(output_sequence_name, self.file_mode)
+            os.chmod(sklearn_classifier_name, self.file_mode)
+        except Exception as e:
+            logging.error("failed to get qiime2 format, error {} ".format(e))
+            return False
+        return True
+    
+      
+    def to_qiime1_rdp_format(self,a_subset_folder, sequence_file, taxon_file):
+        try:
+            qiime1_folder = os.path.join(a_subset_folder, 'Qiime1')
+            rdp_folder = os.path.join(a_subset_folder, 'Qiime1_rdp')
+            if os.path.exists(rdp_folder):
+                shutil.rmtree(rdp_folder)
+            os.makedirs(rdp_folder, mode = self.folder_mode)
+            os.chdir(rdp_folder)
+            # symbolic link to the sequence file
+            input_sequence_name = os.path.join(a_subset_folder,sequence_file)
+            output_sequence_name = os.path.join(rdp_folder,sequence_file)
+            os.symlink(input_sequence_name, output_sequence_name)
+            # remove spaces in qiime1 taxon file
+            input_taxon_name = os.path.join(qiime1_folder, taxon_file)
+            output_taxon_name = os.path.join(rdp_folder,taxon_file)
+            #os.symlink(input_taxon_name, output_taxon_name)
+            with open(input_taxon_name, 'r') as f_in, open(output_taxon_name, 'w') as f_out:
+                for line in f_in:
+                    f_out.write(line.replace('; ', ';'))
+            os.chmod(output_taxon_name, self.file_mode) 
+            os.chmod(output_sequence_name, self.file_mode)    
+        except Exception as e:
+            logging.error("failed to get qiime1_rdp format, error {} ".format(e))
             return False
         return True
     
@@ -415,10 +509,10 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
                     for a_level in levels[1:]:
                         if a_level[3:] and not a_line:
                             a_line = a_level[3:]
-                        if a_level[3:] and a_line:
+                        elif a_level[3:] and a_line:
                             a_line = a_line+";"+a_level[3:]
                     a_line = a_line+";"
-                    mothur_taxon_file.write(tax_id+"\t"+a_line+"\n")
+                    mothur_taxon_file.write(tax_id+"\t"+a_line.replace(" ","")+"\n")
             mothur_taxon_file.close()
             os.chmod(mothur_taxon_name, self.file_mode)      
         except Exception as e:
