@@ -7,7 +7,7 @@ reference data, required for bioinformatic analysis.
 ## Requirements
 
 * python 3.5
-* Conda
+* conda
 
 ## Deployment Procedures
 
@@ -17,21 +17,22 @@ reference data, required for bioinformatic analysis.
 
 * Set up the conda environment for the program
   > cd reference-data-manager
+
   > conda env create -n rdm_env --file rdn_env_setting.yaml 
 
 ## Run the program
 
-* Copy the sample configuration and modify the configuration file;
-  The location of the default configuration file: 
-
-* Copy the sample configuration 
+* Copy the sample configuration and modify the config.yaml file
+  > cp brdm/config.yaml.sample brdm/config.yaml
 
 * View the options of the program
   > source activate rdm_env
+
   > python main.py -h
 
 * Run the program
   > source activate rdm_env
+
   > python main.py [option]
   (an example: python main.py --update-ncbi-blast)
 
