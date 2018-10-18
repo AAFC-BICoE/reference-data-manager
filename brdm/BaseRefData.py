@@ -7,7 +7,7 @@ from datetime import timedelta
 import tarfile
 import gzip
 import zipfile
-
+from pathlib import Path
 
 class BaseRefData():
 
@@ -180,30 +180,92 @@ class BaseRefData():
             return False
         return temp_dir
     
-    # Clean the old files in the destination dir 
-    def clean_destination_dir(self, destination_path, update):
+    # Clean the old files in the destination dir; Temp folder CANNOT be removed 
+    def clean_destination_dir(self, destination_path):
         try:
             os.chdir(destination_path)
             for f in os.listdir("."):
                 if os.path.isfile(f):
                     os.remove(f)
-                if update:
-                    if os.path.isdir(f) and f != 'temp':
-                        shutil.rmtree(f)
-                else:
-                    if os.path.isdir(f):
-                        shutil.rmtree(f)
+                
+                if os.path.isdir(f) and f != 'temp':
+                    shutil.rmtree(f)
+            
         except Exception as e:
             logging.error("Failed to remove files in destination folder, error{}".format(e))
             return False
         return True
     
-    # Check the restore directory
-    def check_restore_dir(self, restore_path):
-        if not os.path.exists(restore_path):
-            logging.error("could not restore, {} does not exist ".format(restore_path))
+    # Check the gap between two dates; used by restore method to select the right version of the database
+    def count_gap_two_dates(self, target_date, date):
+        try:
+            target_items = target_date.split("-")
+            date_items = date.split("-")
+            year = int(target_items[0])-int(date_items[0])
+            month = int(target_items[1])-int(date_items[1])
+            day = int(target_items[2])-int(date_items[2])
+        except Exception as e:
+            logging.error("Failed to count the gap between two dates, error{}".format(e))
+            return -1
+        
+        return (year*365+month*30+day)
+    
+    # Check the path of destination of the restored database
+    # if relative path, then ~/proposed_destination
+    def check_restore_destination(self,proposed_destination):
+        if os.path.isabs(proposed_destination):
+            return proposed_destination
+        else:
+            return os.path.join(str(Path.home()),proposed_destination)
+    
+    # The format of the restore date has to be yyyy-mm-dd        
+    def check_restore_date_format(self,proposed_date):
+        date_format = proposed_date.split("-")
+        if len(date_format) !=3 :
             return False
-        if len(os.listdir(restore_path) ) == 0:
-            logging.error("could not restore, {} is an empty folder ".format(restore_path))
-            return False
+        for index in range(len(date_format)):
+            if not date_format[index].isdigit():
+                return False
         return True
+    
+    # Check the restore date and find the right date to be restored
+    # the right date is the proposed_date if it exists in the backup folder;
+    # otherwise the right date is the one just before the proposed_date that available in the backup folder
+    def check_restore_date(self, backup_dir, proposed_date):
+        restore_path=""
+        try:
+            right_format = self.check_restore_date_format(proposed_date)
+            if not right_format:
+                print("Error: the format of --restore-date has to be yyyy-mm-dd")
+                logging.error("Error: the format of --restore-date has to be yyyy-mm-dd ")
+                return False
+            restore_date = ""
+            minGap = -1;
+            for f in os.listdir(backup_dir):
+                if os.path.isdir(os.path.join(backup_dir,f)) and check_restore_date_format(f):
+                    gap = self.count_gap_two_dates(proposed_date, f)
+                    if gap >= 0 and minGap == -1:
+                        minGap = gap
+                        restore_date = f
+                    if gap >= 0 and minGap > 0 and gap < minGap:
+                        minGap = gap
+                        restore_date = f
+                    print(restore_date)
+            if restore_date:
+                restore_path = os.path.join(backup_dir, restore_date)
+                
+            if not os.path.exists(restore_path):
+                logging.error("could not restore, database created on/before the provided date does not exist ")
+                return False
+            if len(os.listdir(restore_path) ) == 0:
+                logging.error("could not restore, {} is an empty folder ".format(restore_path))
+                return False
+            
+        except Exception as e:
+            logging.error("Failed to check restore folder, error{}".format(e))
+            return False
+        
+        logging.info("Required restore_date {}; Real restore_date {} ".format(proposed_date, restore_date))
+        print("Required restore_date " + proposed_date +"; Real restore_date "+ restore_date)
+        return restore_path
+    

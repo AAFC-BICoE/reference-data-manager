@@ -54,7 +54,7 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
             return False
         # Delete old files from the destination folder
         # Copy new files from intermediate folder to destination folder
-        clean_destination_ok = self.clean_destination_dir(self.destination_dir, True)
+        clean_destination_ok = self.clean_destination_dir(self.destination_dir)
         if not clean_destination_ok:
             return False
         try:
@@ -195,25 +195,33 @@ class NcbiTaxonomyData(NcbiData, RefDataInterface):
         
         return True
 
-    def restore(self, folder_name):
-        logging.info("Executing NCBI taxonomy restore {} ".format(folder_name))
+    def restore(self, proposed_folder_name, path_to_destination):
+        logging.info("Executing NCBI taxonomy restore {} to {}".format(proposed_folder_name,path_to_destination))
         # check the restore folder, return false if not exist or empty folder
         try:
-            restore_folder = os.path.join(self.backup_dir, folder_name)
-            restore_folder_ok = self.check_restore_dir(restore_folder)
-            if not restore_folder_ok:
+            #restore_folder = os.path.join(self.backup_dir, proposed_folder_name)
+            restore_folder = self.check_restore_date(self.backup_dir, proposed_folder_name)
+            if not restore_folder:
                 return False
-            # remove all the file in destination_dir 
-            clean_destination_ok = self.clean_destination_dir(self.destination_dir, False)
-            if not clean_destination_ok:
+            
+            restore_destination = self.check_restore_destination(path_to_destination)
+            if not restore_destination:
                 return False 
-            # copy the all the files in backup_dir/folder_name to destination_dir    
+            
+            # create restore destination folder
+            if not os.path.isdir(restore_destination):
+                os.makedirs(restore_destination,mode = self.folder_mode)
+                
+            # copy the all the files in backup_dir/folder_name to restore destination  
             os.chdir(restore_folder)
             for filename in os.listdir(restore_folder):
-                shutil.copy2(filename, self.destination_dir) 
+                shutil.copy2(filename, restore_destination) 
         
         except Exception as e:
             logging.exception("NCBI taxonomy restore did not succeed. Error: {}".format(e))
             return False
+        
+        print("The restored database is located at " +restore_destination)
+        logging.info("The restored database is located at {} ".format(restore_destination))
         
         return True

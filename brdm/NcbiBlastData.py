@@ -57,7 +57,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             logging.error("Failed to backup readme files. The update will not continue.")
             return False
         # Delete all data from the destination folder
-        clean_destination_ok = self.clean_destination_dir(self.destination_dir, True)
+        clean_destination_ok = self.clean_destination_dir(self.destination_dir)
         if not clean_destination_ok:
             logging.error("Failed to remove old files from destination folder")
             return False

@@ -14,7 +14,9 @@ class GreenGeneData(BaseRefData, RefDataInterface):
         super(GreenGeneData, self).__init__(config_file)
         self.download_url = self.config['greengene']['download_url']
         self.download_file = self.config['greengene']['download_file']
+        self.format_file = self.config['greengene']['format_file']
         self.info_file_name = self.config['greengene']['info_file_name']
+        self.qiime2_path = self.config['greengene']['qiime2_path']
         try:
             self.destination_dir = os.path.join(super(GreenGeneData, self).destination_dir, \
                                                 self.config['greengene']['destination_folder'])
@@ -147,21 +149,8 @@ class GreenGeneData(BaseRefData, RefDataInterface):
         requests_ftp.monkeypatch_session()
         session_requests = requests.Session()
         try:   
-            res = session_requests.get(file_address, stream=True, verify=False)
-            '''
-            res.encoding = 'utf-8'
-            print(res.encoding)
+            res = session_requests.get(file_address, stream=True)
             with open(file_name, 'wb') as output:
-                chunknumber = 0
-                #for chunk in res.iter_content(chunk_size=chunkSize, decode_unicode=False):
-                for chunk in res.iter_content(chunk_size=chunkSize):
-                    if chunk:
-                        totalSize = totalSize + chunkSize
-                        chunknumber += 1
-                        output.write(chunk) 
-            '''
-            with open(file_name, 'wb') as output:
-                #output.write(res.raw.read())
                 shutil.copyfileobj(res.raw, output)
             
             session_requests.close()
@@ -185,7 +174,7 @@ class GreenGeneData(BaseRefData, RefDataInterface):
             shutil.copy2(app_readme_file, backup_folder)
             shutil.copy2(ncbi_readme_file, backup_folder)
         except Exception as e:
-            logging.exception("NCBI Blast Backup did not succeed. Error: {}".format(e))
+            logging.exception("Greengene backup did not succeed. Error: {}".format(e))
             return False
 
         return True
@@ -193,4 +182,184 @@ class GreenGeneData(BaseRefData, RefDataInterface):
     def restore(self,folder_name):
         logging.info("Restoringing Greengene data ... Nothing to do.")
         pass
+    
+    def get_format_file_list(self):
+        sequence_file = []
+        taxon_file = []
+        output_file = []
+        try:
+            for a_file in self.format_file:
+                f1 = a_file.split("|")[0].strip()
+                f2 = a_file.split("|")[1].strip()
+                f3 = a_file.split("|")[2].strip()
+                if f1 and f2 and f3:
+                    sequence_file.append(os.path.join(self.destination_dir, f1))
+                    taxon_file.append(os.path.join(self.destination_dir, f2))
+                    output_file.append(f3)
+                else:
+                    logging.error("the format file is not valid {}".format(a_file))
+                    return False
+        except Exception as e:
+            logging.exception("Failed in get format file list. Error: {}".format(e))
+            return False
+
+        return sequence_file,taxon_file,output_file
+            
+    def format(self):
+        sequence_file,taxon_file,output_file = self.get_format_file_list()
+        qiime1 = self.to_qiime1_format(sequence_file, taxon_file, output_file)
+        if not qiime1:
+            logging.error("Failed to get qiime1 format.")
+            return False
+        mothur = self.to_mothur_format(sequence_file, taxon_file, output_file)
+        if not mothur:
+            logging.error("Failed to get mothur format.")
+            return False
+        qiime2 = self.to_qiime2_format(sequence_file, taxon_file, output_file)
+        if not qiime2:
+            logging.error("Failed to get qiime2 format.")
+            return False
+        q1_rdp = self.to_qiime1_rdp_format(sequence_file, taxon_file, output_file)
+        if not q1_rdp:
+            logging.error("Failed to get qiime1_rdp format.")
+            return False
+            
+        return True
+    
+    
+    def to_qiime1_format(self, sequence_file, taxon_file, output_file):
+        try:
+            qiime1_folder = os.path.join(self.destination_dir, 'Qiime1')
+            if os.path.exists(qiime1_folder):
+                shutil.rmtree(qiime1_folder)
+            os.makedirs(qiime1_folder, mode = self.folder_mode)
+            os.chdir(qiime1_folder)
+            for index in range(len(sequence_file)):
+                input_sequence = sequence_file[index]
+                input_taxon = taxon_file[index]
+                output_sequence = os.path.join(qiime1_folder, output_file[index])+".fasta"
+                output_taxon = os.path.join(qiime1_folder, output_file[index])+".taxon"
+                os.symlink(input_sequence, output_sequence)
+                os.symlink(input_taxon, output_taxon)
+                os.chmod(output_sequence, self.file_mode)
+                os.chmod(output_taxon, self.file_mode)       
+        except Exception as e:
+            logging.error("Failed to get qiime1 format, error {} ".format(e))
+            return False
+        return True
+    
+    
+    def to_qiime2_format(self,sequence_file, taxon_file, output_file):
+        try:
+            qiime2_folder = os.path.join(self.destination_dir, 'Qiime2')
+            if os.path.exists(qiime2_folder):
+                shutil.rmtree(qiime2_folder)
+            os.makedirs(qiime2_folder, mode = self.folder_mode)
+            os.chdir(qiime2_folder)
+            export_path = 'export PATH="'+self.qiime2_path+':$PATH"'
+            os.system(export_path)
+            print(export_path)
+            for index in range(len(sequence_file)):
+                input_sequence = sequence_file[index]
+                input_taxon = taxon_file[index]
+                output_taxon = os.path.join(qiime2_folder, output_file[index])+"_taxon.qza"
+                output_sequence = os.path.join(qiime2_folder, output_file[index])+"_fasta.qza"
+                sklearn_classifier = os.path.join(qiime2_folder, output_file[index])+"_sklearn_classifier.qza"
+                
+                command1 = self.qiime2_path+"/qiime tools import \
+                        --type 'FeatureData[Sequence]' \
+                        --input-path "+input_sequence+ " \
+                        --output-path "+ output_sequence
+                os.system(command1)
+                print(command1)
+                command2 = self.qiime2_path+"/qiime tools import \
+                        --type 'FeatureData[Taxonomy]' \
+                        --source-format HeaderlessTSVTaxonomyFormat \
+                        --input-path "+ input_taxon+ " \
+                        --output-path "+ output_taxon
+                        
+                os.system(command2)
+                print(command2)
+                command3 = self.qiime2_path+"/qiime feature-classifier fit-classifier-naive-bayes \
+                      --i-reference-reads "+output_sequence +" \
+                      --i-reference-taxonomy "+output_taxon +" \
+                      --o-classifier "+sklearn_classifier
+                print(command3)
+                os.system(command3)
+                print("after command3")
+                  
+                os.chmod(output_taxon, self.file_mode)
+                os.chmod(output_sequence, self.file_mode)
+                os.chmod(sklearn_classifier, self.file_mode)
+        except Exception as e:
+            logging.error("Failed to get qiime2 format, error {} ".format(e))
+            return False
+        return True
+    
+      
+    def to_qiime1_rdp_format(self,sequence_file, taxon_file, output_file):
+        try:
+            rdp_folder = os.path.join(self.destination_dir, 'Qiime1_rdp')
+            if os.path.exists(rdp_folder):
+                shutil.rmtree(rdp_folder)
+            os.makedirs(rdp_folder, mode = self.folder_mode)
+            os.chdir(rdp_folder)
+            for index in range(len(sequence_file)):
+                input_sequence = sequence_file[index]
+                input_taxon = taxon_file[index]
+                output_taxon = os.path.join(rdp_folder, output_file[index])+".taxon"
+                output_sequence = os.path.join(rdp_folder, output_file[index])+".fasta"
+                # symbolic link to the sequence file
+                os.symlink(input_sequence, output_sequence)
+                # remove spaces in qiime1 taxon file
+                with open(input_taxon, 'r') as f_in, open(output_taxon, 'w') as f_out:
+                    for line in f_in:
+                        f_out.write(line.replace('; ', ';'))
+                os.chmod(output_taxon, self.file_mode) 
+                os.chmod(output_sequence, self.file_mode)    
+        except Exception as e:
+            logging.error("failed to get qiime1_rdp format, error {} ".format(e))
+            return False
+        return True
+    
+    
+    def to_mothur_format(self, sequence_file, taxon_file, output_file):
+        try:
+            mothur_folder = os.path.join(self.destination_dir, 'Mothur')
+            if os.path.exists(mothur_folder):
+                shutil.rmtree(mothur_folder)
+            os.makedirs(mothur_folder, mode = self.folder_mode)
+            os.chdir(mothur_folder)
+            for index in range(len(sequence_file)):
+                input_sequence = sequence_file[index]
+                input_taxon = taxon_file[index]
+                output_taxon = os.path.join(mothur_folder, output_file[index])+".taxon"
+                output_sequence = os.path.join(mothur_folder, output_file[index])+".fasta"
+                # symbolic link to the sequence file
+                os.symlink(input_sequence, output_sequence)
+                
+                mothur_taxon_file = open(output_taxon, "w")     
+                with open(input_taxon) as fp:
+                    content = fp.readlines()
+                    for line in content:
+                        line = line[:-1]
+                        x = line.split("\t")
+                        tax_id, level_8 = x
+                        levels = level_8.split('; ')
+                        a_line=""
+                        for a_level in levels:
+                            if a_level[3:] and not a_line:
+                                a_line = a_level[3:]
+                            elif a_level[3:] and a_line:
+                                a_line = a_line+";"+a_level[3:]
+                        a_line = a_line+";"
+                        mothur_taxon_file.write(tax_id+"\t"+a_line.replace(" ","")+"\n")
+                mothur_taxon_file.close()
+                os.chmod(output_taxon, self.file_mode)  
+                os.chmod(output_sequence, self.file_mode)     
+        except Exception as e:
+            logging.error("Failed to get mothur format, error {} ".format(e))
+            return False
+        return True
+    
    

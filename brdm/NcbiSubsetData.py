@@ -9,6 +9,7 @@ import time
 from distutils.dir_util import copy_tree
 import textwrap
 
+
 class NcbiSubsetData(NcbiData, RefDataInterface):
 
     def __init__(self, config_file):
@@ -64,7 +65,7 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
 
         # Delete old files from the destination folder
         # Copy new files from intermediate folder to destination folder
-        clean_destination_ok = self.clean_destination_dir(self.destination_dir, True)
+        clean_destination_ok = self.clean_destination_dir(self.destination_dir)
         if not clean_destination_ok:
             return False
         try:
@@ -75,10 +76,16 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
             return False
         
         # Get fasta file and taxonomy file for each subsets based on accID
-        subsets_list = self.get_subset_list()
-        retrieve_success = self.accID_to_info(subsets_list)
+        #subsets_list = self.get_subset_list()
+        #retrieve_success = self.accID_to_info(self.deatination_dirsubsets_list)
+        retrieve_success = self.accID_to_info(self.destination_dir)
         if not retrieve_success:
             logging.error("Failed: accID to fasta and taxonomy ")
+            return False
+        
+        format_success = self.format(self.destination_dir)
+        if not format_success:
+            logging.error("Failed: format subsets ")
             return False
         
         return True
@@ -138,15 +145,24 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
             accID_file = open(accID_file_name, "w")
         except Exception as e:
             logging.error("Cannot open file {}. Error: {}".format(accID_file,e))
-            return False 
+            return False
         batch_size = self.batch_size  
         max_attemp = self.connection_retry_num
-        try:
-            search_handle = Entrez.esearch(db="nucleotide", term=query, usehistory="y", idtype="acc")
-            search_results = Entrez.read(search_handle)
-            search_handle.close()
-        except HTTPError as err:
-            logging.error("Connection could not be established {} ".format(err))
+        connection_again = True
+        connection_attemp =0
+        while connection_attemp < max_attemp and connection_again:
+            connection_attemp += 1
+            try:
+                search_handle = Entrez.esearch(db="nucleotide", term=query, usehistory="y", idtype="acc")
+                search_results = Entrez.read(search_handle)
+                search_handle.close()
+                connection_again = False
+            except HTTPError as err:
+                logging.error("Connection could not be established {} on attempt {} ".format(err,connection_attemp))
+                time.sleep(self.sleep_time)
+                
+        if connection_again:
+            logging.error("Connection could not be established {} after all attempts ".format(err))
             return False
         
         count = int(search_results["Count"])
@@ -165,26 +181,21 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
                                          retstart=start, retmax=batch_size,
                                          webenv=webenv, query_key=query_key,
                                          idtype="acc")
+                    search_results = Entrez.read(search_handle)
+                    acc_list = search_results["IdList"]
+                    totalID = totalID + len(acc_list)
+                    acc_str = "\n".join(acc_list)
+                    accID_file.write(acc_str+"\n")
                     again = False
                 except Exception as e:
-                    logging.error("Received error {}".format(e))
+                    logging.error("Received error in downloading  {}".format(e))
                     logging.error("Attempt {} of {}".format(attempt,max_attemp))
                     time.sleep(self.sleep_time)
             
             if again:
                 logging.error("Failed to get the record {} to {}".format(start+1, end))
                 return False
-            
-            if not again:
-                try:
-                    search_results = Entrez.read(search_handle)
-                    acc_list = search_results["IdList"]
-                    totalID = totalID + len(acc_list)
-                    acc_str = "\n".join(acc_list)
-                    accID_file.write(acc_str+"\n")
-                except Exception as e:
-                    logging.error("Cannot write to file {}. Error: {}".format(accID_file_name,e))
-                    return False 
+                
         try:
             accID_file.close()
         except Exception as e:
@@ -198,49 +209,51 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
         return True
 
     
-    
     # Restore accID file from a backup folder, 
     # Retrieve sequences and taxonomy from accID
-    def restore(self, folder_name):
-        logging.info("Executing NCBI subsets restore {} ".format(folder_name))
-        # check the restore folder, return false if not exist or empty folder
+    def restore(self, proposed_folder_name, path_to_destination):
+        logging.info("Executing NCBI subsets restore {}{} ".format(proposed_folder_name, path_to_destination))
         try:
-            restore_folder = os.path.join(self.backup_dir, folder_name)
-            restore_folder_ok = self.check_restore_dir(restore_folder)
-            if not restore_folder_ok:
+            restore_folder = self.check_restore_date(self.backup_dir, proposed_folder_name)
+            if not restore_folder:
                 return False
-            # remove all the file in destination_dir 
-            clean_destination_ok = self.clean_destination_dir(self.destination_dir, False)
-            if not clean_destination_ok:
+        
+            restore_destination = self.check_restore_destination(path_to_destination)
+            if not restore_destination:
                 return False 
+                
+            if not os.path.isdir(restore_destination):
+                os.makedirs(restore_destination,mode = self.folder_mode)
             # copy the all the files in backup_dir/folder_name to destination_dir    
             os.chdir(restore_folder)
             for filename in os.listdir(restore_folder):
-                shutil.copy2(filename, self.destination_dir)
-            os.chdir(self.destination_dir)
+                shutil.copy2(filename, restore_destination)
             
         except Exception as e:
             logging.error("Failed to copy files. Error: {}".format(e))
             return False 
         
         logging.info("retrieve sequence and taxonomy info from accID")
-        subsets_list = self.get_subset_list_restore()
-        if len(subsets_list) == 0 :
-            logging.error("Failed to get accID_file ")
-            return False
-        
-        retrieve_success = self.accID_to_info(subsets_list)
+        retrieve_success = self.accID_to_info(restore_destination)
         if not retrieve_success:
             logging.error("Failed: accID to fasta and taxonomy ")
             return False
-
+        format_success = self.format(restore_destination)
+        if not format_success:
+            logging.error("Failed: format subsets ")
+            return False
+        
+        print("The restored database is located at " +restore_destination)
+        logging.info("The restored database is located at {} ".format(restore_destination))
+        
         return True
     
     # Get the list of subsets in the destination dir. Required in the method format
-    def get_subset_list_format(self):
+    def get_subset_list_format(self, path_destination):
         list = []
         try:
-            current_files = [f for f in os.listdir(self.destination_dir) if os.path.isdir(f)]
+            current_files = [f for f in os.listdir(path_destination) 
+                             if os.path.isdir(os.path.join(path_destination,f))]
             for filename in current_files:
                 list.append(filename)
         except Exception as e:
@@ -251,10 +264,11 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
         return list   
         
     # Get the list of subsets in the destination_dir. Required in the method restore
-    def get_subset_list_restore(self):
+    def get_subset_list(self, path_destination):
         list = []
         try:
-            current_files = [f for f in os.listdir(self.destination_dir) if os.path.isfile(f)]
+            current_files = [f for f in os.listdir(path_destination)
+                              if os.path.isfile(os.path.join(path_destination,f))]
             for filename in current_files:
                 print(filename)
                 if filename.endswith(self.ext_accID):
@@ -267,28 +281,23 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
         
         return list
      
-    # Get the list of subsets from self.query   
-    def get_subset_list(self):
-        list = []
-        for a_set in self.query:
-            subset_file_name = a_set.split("|")[0].strip()
-            list.append(subset_file_name)
-        return list
-    
-    
     # From accID to sequence file and taxonomy 
-    def accID_to_info(self, set_list):
-        for a_set in set_list:
+    def accID_to_info(self, path_to_destination):
+        subsets_list = self.get_subset_list(path_to_destination)
+        if len(subsets_list) == 0 :
+            logging.error("Failed to get accID_file ")
+            return False
+        for a_set in subsets_list:
             subset_file_name = a_set
             accID_file = subset_file_name+self.ext_accID
             sequence_file = subset_file_name+ self.ext_sequence
             taxon_file = subset_file_name+ self.ext_taxonomy       
             try:
-                a_subset_folder = os.path.join(self.destination_dir, subset_file_name)
+                a_subset_folder = os.path.join(path_to_destination, subset_file_name)
                 if os.path.exists(a_subset_folder):
                     shutil.rmtree(a_subset_folder)
                 os.makedirs(a_subset_folder, mode = self.folder_mode)
-                shutil.move(os.path.join(self.destination_dir,accID_file), os.path.join(a_subset_folder,accID_file))
+                shutil.move(os.path.join(path_to_destination,accID_file), os.path.join(a_subset_folder,accID_file))
                 os.chdir(a_subset_folder)
                 print(a_subset_folder)
                 command = "blastdbcmd -db "+self.path_to_nt+ "  -target_only  -entry_batch " + accID_file + " -outfmt \"%a %T %s\" -out "+sequence_file+".tmp"
@@ -361,8 +370,9 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
             raise
      
      
-    def format(self):
-        subsets_list = self.get_subset_list_format()
+    def format(self, path_to_destination):
+        print(path_to_destination)
+        subsets_list = self.get_subset_list_format(path_to_destination)
         if len(subsets_list) == 0 :
             logging.error("Failed to get accID_file ")
             return False
@@ -371,7 +381,7 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
             subset_file_name = a_set
             sequence_file = subset_file_name+ self.ext_sequence
             taxon_file = subset_file_name+ self.ext_taxonomy      
-            a_subset_folder = self.destination_dir+subset_file_name
+            a_subset_folder = os.path.join(path_to_destination,subset_file_name)
             qiime1 = self.to_qiime1_format(a_subset_folder, sequence_file, taxon_file)
             if not qiime1:
                 logging.error("Failed to get qiime1 format {} ".format(subset_file_name))
@@ -380,15 +390,18 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
             if not mothur:
                 logging.error("Failed to get mothur format {} ".format(subset_file_name))
                 return False
-            qiime2 = self.to_qiime2_format(a_subset_folder, sequence_file, taxon_file, subset_file_name)
-            if not qiime2:
-                logging.error("Failed to get qiime2 format {} ".format(subset_file_name))
-                return False
+            #qiime2 = self.to_qiime2_format(a_subset_folder, sequence_file, taxon_file, subset_file_name)
+            #if not qiime2:
+            #    logging.error("Failed to get qiime2 format {} ".format(subset_file_name))
+            #    return False
             q1_rdp = self.to_qiime1_rdp_format(a_subset_folder, sequence_file, taxon_file)
             if not q1_rdp:
                 logging.error("Failed to get qiime1_rdp format {} ".format(subset_file_name))
                 return False
-            
+            blast = self.to_blast_format(a_subset_folder,sequence_file, taxon_file, subset_file_name)
+            if not blast:
+                logging.error("Failed to get blast format {} ".format(subset_file_name))
+                return False
         return True
     
     
@@ -517,6 +530,26 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
             os.chmod(mothur_taxon_name, self.file_mode)      
         except Exception as e:
             logging.error("failed to get mothur format, error {} ".format(e))
+            return False
+        return True
+    
+    
+    def to_blast_format(self, a_subset_folder, sequence_file, taxon_file, subset_file):
+        try:
+            blast_folder = os.path.join(a_subset_folder, 'Blast')
+            if os.path.exists(blast_folder):
+                shutil.rmtree(blast_folder)
+            os.makedirs(blast_folder, mode = self.folder_mode)
+            os.chdir(blast_folder)
+            sequence_input = os.path.join(a_subset_folder, sequence_file)
+            blastdb_name = os.path.join(blast_folder, subset_file)
+            command1 = "makeblastdb -in "+sequence_input+" -dbtype nucl -out "+blastdb_name
+            os.system(command1)
+            for f in os.listdir("."):
+                if os.path.isfile(f):
+                    os.chmod(f, self.file_mode)   
+        except Exception as e:
+            logging.error("failed to get blast format, error {} ".format(e))
             return False
         return True
                              
