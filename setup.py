@@ -1,18 +1,41 @@
 from setuptools import setup, find_packages
+import os.path
+
+readme_file = 'README.md'
+readme = 'Cannot find the file:'+readme_file
+if os.path.exists(readme_file):
+    with open(readme_file) as f:
+        readme = f.read()
+
+license_file = 'LICENSE'
+license ='Cannot find the file:'+license_file
+if os.path.exists(license_file):
+    with open(license_file) as f:
+        license = f.read()
+
+requires_file = 'requirements.txt'
+requires = 'Cannot find the file:'+requires_file
+if os.path.exists(requires_file):
+    with open(requires_file) as f:
+        requires = f.read()
 
 
 setup(
-    name="brdm",
-    version="0.1",
+    name="reference-data-manager",
+    version="0.1.9",
 
     description='''Bioinformatics Reference Data Manager is an application used to download, backup and update of \
     reference data, required for various bioinformatics analysis''',
-
-    author='Oksana Korol',
-    author_email='oksana.korol@agr.gc.ca',
+    
+    long_description=readme,
+    
+    author='Oksana Korol, Chunfang Zheng',
+    author_email='aafc.bice-ceib.aac@canada.ca',
 
     url='https://github.com/AAFC-BICoE/reference-data-manager',
-
+    
+    license=license,
+    
     classifiers=(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
@@ -35,32 +58,5 @@ setup(
           ],
       },
 
-    install_requires=[
-        'PyYAML==3.13',
-        'requests==2.19.1', ## This one also installs certifi, idna, urllib3, chardet and itself (requests)
-      ],
-
 
 )
-
-'''
-setup(name='rdm',
-      version='0.1',
-      description='Reference Data Manager for bioinformatics research',
-      author='Oksana Korol',
-      author_email='oksana.korol@agr.gc.ca',
-      url='https://github.com/AAFC-BICoE/reference-data-manager',
-
-      packages=find_packages(exclude=['test', '*.test', '*.test.*']),
-      include_package_data=True,
-      package_data={
-        '': ['*.yaml.sample', 'README.md'],
-        'config': ['*.yaml.sample, *.yaml'],
-      },
-      
-    classifiers=(
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-    ),
-      )
-'''

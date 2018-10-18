@@ -2,79 +2,114 @@
 ###           Configuration file for               ###
 ### Bioinformatics Reference Data Manager (BRDM)   ###
 ######################################################
-# Modify this file and rename to config.yaml
+# Copy this file to config.yaml and modify your config.yaml
 
+# Path to the topmost folder of the database/backup 
 root_folder: "/path/to/database/root/folder/"
 backup_folder: "/path/to/database/backup/folder/"
 
-### Name of the BRDM-specific readme file. This file is automatically placed in every folder with data and has dual use:
-### for user reference and for backup.
+### Name of the BRDM-specific readme file. This file is automatically placed 
+### in every folder for user reference and for backup.
 readme_file: "README+"
 
-### Number of times BRDM will re-try failed download and failed connections
+### Numbers of attempts to connect to website and to download files
+### Time (in seconds) to be paused between two attempts
 download_retry_num: 3
 connection_retry_num: 3
 sleep_time: 2
 
-### Folder mode and file mode
+### Folder mode and file mode for the reference database
 folder_mode: 0o750
 file_mode: 0o640
-
 
 
 ######################################################
 ### Setup, specific for each download module       ###
 ######################################################
 
+### All the destination_folders below are the folders to store the data
+### The path of the destination folder follows the inheritance rule:
+### e.g. the path of the taxonomy destination_folder below 
+### will be /path/to/topmost/folder/ncbi/taxonomy/
+
 ncbi:
     destination_folder: "ncbi/"
+    ### ncbi account login webpage, userId and password
     login_url: "https://ftp.ncbi.nlm.nih.gov"
     user: "your_ncbi_ID"
     password: "your_ncbi_password"
+    ### The file is downloaded in chunks; define the chunk_size here
     chunk_size: 524288
 
     blast_db:
-        destination_folder: "blast/"
+        destination_folder: "nrnt-blast/"
+        ### The folder in NCBI website which contains nrnt files
         download_folder: "blast/db/"
+        ### readme file provided by NCBI. Description of the NCBI nrnt blast database
         info_file_name: "README"
         
     taxonomy:       
         destination_folder: "taxonomy/"
-        info_file_name: "taxdump_readme.txt"
+        ### The folder in NCBI website which contains taxonomy information
         download_folder: "pub/taxonomy/new_taxdump"
+        ### readme file provided by NCBI. Description of the NCBI taxonomy database
+        info_file_name: "taxdump_readme.txt"
+        ### The name of the tarfile which will be downloaded from NCBI download_folder 
         download_file: "new_taxdump.tar.gz"
+        ### The specific file in downloaded tarball which contains information we need
         taxonomy_file: "rankedlineage"
     
-    whole_genome:       
-        destination_folder: "wholeGenome/"
-        info_file_name: "README.txt"
-        download_folder: "genomes/refseq/"
-        download_file: "assembly_summary.txt"
-        assembly_level: "Complete Genome"
-        species:
-            - bacteria
-            - viral
-
     subsets:
         destination_folder: "subsets/"
+        ### A valid email is required by NCBI entrez; provide your email here
         entrez_email: "your_email_address"
-        info_file_name: "README"
+        ### Only accession IDs for each subsets are downloaded from NCBI
+        ### To retrieve the sequence and taxonomy for an accession ID, 
+        ### the paths to local ncbi/nt and ncbi/taxonomy are required
         taxonomy_file: "/path/to/ncbi/taxonomy/rankedlineage.txt"
-        nt_file: "/path/to/ncbi/blast/nt"
+        nt_file: "/path/to/ncbi/blast_db/nt"
+        ### Extensions for accession ID file, sequence file and taxonomy file
         ext_accID: ".accID"
         ext_sequence: ".fasta"
         ext_taxonomy: ".taxon"
-        batch_size: 50
+        ### The accession IDs are downloaded in batches. Define the batch_size here
+        batch_size: 6000
+        ### Required for formating sequence files. line_width is the number of bases in each line
         line_width: 80
+        ### The list of subset names, and the query to get each subset
         query_set:
             - "CO1p | COI and Phyllocnistis citrella"
             - "ITSD | Internal Transcribed Spacer[All Fields] and Diplodia seriata"
+            
+    whole_genome:       
+        destination_folder: "wholeGenome/"
+        ### The folder in NCBI website which contains genome sequences
+        download_folder: "genomes/refseq/"
+        ### readme file provided by NCBI. Description of the NCBI genome database
+        info_file_name: "README.txt"
+        ### The summary file which contains the links to all the genome sequences
+        download_file: "assembly_summary.txt"
+        ### The available assembly_level options: Contig, Scaffold, Chromosome, Complete Genome.
+        ### Only one option can be selected (Can be modified for multiple options)
+        assembly_level: "Complete Genome"
+        ### The details of the available options can be found in the downloaded README.txt.
+        ### List of options: archaea,bacteria,fungi,invertebrate,metagenomes(genbank)
+        ### other(genbank),plant,protozoa,vertebrate_mammalian,vertebrate_other,viral, 
+        ### mitochondrion(refseq),plasmid(refseq),plastid(refseq)
+        species:
+            - bacteria
+            - viral
+    
     
 greengene:
     destination_folder: "greengene/"
-    info_file_name: "00README"
+    ### The link of the site for downloading genegene files 
     download_url: "ftp://greengenes.microbio.me/greengenes_release/gg_13_5/"
+    ### Readme file provided by GreenGene; contains useful information related to GreenGene
+    info_file_name: "00README"
+    ### The file is downloaded in chunks; define the chunk_size here
     chunk_size: 524288
+    ### The are many files in the download_url; specify the file names that need to be downloaded
     download_file:
         - "gg_13_5.fasta.gz"
         - "gg_13_5_taxonomy.txt.gz"

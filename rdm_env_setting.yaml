@@ -49,4 +49,3 @@ dependencies:
   - zlib=1.2.11=h470a237_3
   - libgcc-ng=7.2.0=hdf63c60_3
   - libstdcxx-ng=7.2.0=hdf63c60_3
-prefix: /home/chz001/myspace/miniconda2/envs/rdm-env
