@@ -22,7 +22,7 @@ if os.path.exists(requires_file):
 
 setup(
     name="reference-data-manager",
-    version="0.1.9",
+    version="0.3.0",
 
     description='''Bioinformatics Reference Data Manager is an application used to download, backup and update of \
     reference data, required for various bioinformatics analysis''',
@@ -36,12 +36,6 @@ setup(
     
     license=license,
     
-    classifiers=(
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-    ),
-
-
     packages=find_packages(exclude=['test*', 'Test*']),
 
     package_data={
@@ -49,8 +43,9 @@ setup(
         'brdm': ['config.yaml.sample']
       },
 
+    include_package_data=True,
 
-    scripts=['main.py'],
+    scripts=['main.py','rdm_env_setting.yaml'],
 
     entry_points={
           'console_scripts': [

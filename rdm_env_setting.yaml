@@ -1,6 +1,4 @@
-name: rdm-env
 channels:
-  - anaconda
   - biocore
   - bioconda
   - conda-forge
@@ -17,7 +15,9 @@ dependencies:
   - cryptography=2.2.2=py35h14c3975_0
   - idna=2.7=py35_0
   - intel-openmp=2018.0.3=0
+  - libgcc-ng=7.2.0=hdf63c60_3
   - libgfortran-ng=7.2.0=hdf63c60_3
+  - libstdcxx-ng=7.2.0=hdf63c60_3
   - mkl=2018.0.3=1
   - mkl_fft=1.0.1=py35h3010b51_0
   - mkl_random=1.0.1=py35h629b387_0
@@ -29,8 +29,12 @@ dependencies:
   - pysocks=1.6.8=py35_0
   - pyyaml=3.13=py35h14c3975_0
   - requests=2.19.1=py35_0
+  - requests-ftp=0.3.1=py35_0
+  - setuptools=40.0.0=py35_0
   - six=1.11.0=py35h423b573_1
   - urllib3=1.23=py35_0
+  - wheel=0.31.1=py35_0
+  - xz=5.2.3=0
   - yaml=0.1.7=had09818_2
   - python-wget=3.2=py35_0
   - blast-plus=2.2.31=0
@@ -40,12 +44,6 @@ dependencies:
   - pip=18.0=py35_0
   - python=3.5.5=h5001a0f_2
   - readline=7.0=haf1bffa_1
-  - requests-ftp=0.3.1=py35_0
-  - setuptools=40.0.0=py35_0
   - sqlite=3.24.0=h2f33b56_0
   - tk=8.6.8=0
-  - wheel=0.31.1=py35_0
-  - xz=5.2.3=0
   - zlib=1.2.11=h470a237_3
-  - libgcc-ng=7.2.0=hdf63c60_3
-  - libstdcxx-ng=7.2.0=hdf63c60_3
