@@ -62,6 +62,19 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
         if not backup_success:
             logging.error("Backup of reference data did not succeed. The update will not continue.")
             return False
+        
+        # Get fasta file and taxonomy file for each subsets based on accID
+        #subsets_list = self.get_subset_list()
+        #retrieve_success = self.accID_to_info(self.deatination_dirsubsets_list)
+        retrieve_success = self.accID_to_info(temp_dir)
+        if not retrieve_success:
+            logging.error("Failed: accID to fasta and taxonomy ")
+            return False
+        
+        format_success = self.format(temp_dir)
+        if not format_success:
+            logging.error("Failed: format subsets ")
+            return False
 
         # Delete old files from the destination folder
         # Copy new files from intermediate folder to destination folder
@@ -75,18 +88,7 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
             logging.error("Failed to move files from temp_dir to destination folder, error{}".format(e))
             return False
         
-        # Get fasta file and taxonomy file for each subsets based on accID
-        #subsets_list = self.get_subset_list()
-        #retrieve_success = self.accID_to_info(self.deatination_dirsubsets_list)
-        retrieve_success = self.accID_to_info(self.destination_dir)
-        if not retrieve_success:
-            logging.error("Failed: accID to fasta and taxonomy ")
-            return False
         
-        format_success = self.format(self.destination_dir)
-        if not format_success:
-            logging.error("Failed: format subsets ")
-            return False
         
         return True
      

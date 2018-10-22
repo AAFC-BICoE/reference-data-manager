@@ -6,6 +6,7 @@ import logging
 import time
 from distutils.dir_util import copy_tree
 import requests
+from hashlib import md5
 
 class NcbiWholeGenome(NcbiData, RefDataInterface):
 
@@ -127,21 +128,22 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
         
             attempt = 0
             
-        
+            
             if len(file_list) == 0:
                 logging.error("Failed to get the file list to download")
                 return False
         
             if download_file_number == 0:
                 download_file_number = len(file_list)
-            downloaded = 0   
+            downloaded = 0 
+            file_list_downloaded=[]  
             completed = False
             while attempt < max_download_attempts and completed == False:
                 attempt += 1
                 try:
                     session_requests,connected = self.https_connect(); 
                     for a_file in file_list:
-                        if a_file not in downloaded_file:
+                        if a_file not in file_list_downloaded:
                             #download  a genome zipped file
                             file_name = a_file.split('/')[-1]
                             file_url  = a_file.replace("ftp://","https://")
@@ -150,15 +152,18 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
                             md5_url = file_url.replace(file_name, md5_name)
                             md5_file = self.download_a_file(md5_name, md5_url, session_requests)
                             md5_code = self.read_md5(md5_name, file_name)
+                            
                             a_file_success = self.check_md5(file_name, md5_code)
                             if a_file_success:
                                 unzip_success = self.unzip_file(file_name)
                             if unzip_success:
                                 downloaded += 1
                                 downloaded_file.append(a_set+"\t"+file_url)
+                                file_list_downloaded.append(a_file)
                             if downloaded == download_file_number:
                                 completed = True
                                 break;
+                    session_requests.close()
                 except Exception as e:
                     logging.error("Failed to download all file in {} on attempt {}: {}".format(a_set,attempt, e)) 
                     time.sleep(self.sleep_time)
@@ -169,7 +174,6 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
                     for f in only_files:
                         os.chmod(f, self.file_mode)
                     os.chdir('..')
-                    session_requests.close()
                 except Exception as e:
                     logging.error("Failed to change file mode")
                     return False
@@ -250,68 +254,91 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
         
         return True
 
-    '''
-    def restore(self, folder_name):
-        logging.info("Executing NCBI wholegenome restore {} ".format(folder_name))
-        # check the restore folder, return false if not exist or empty folder
+    
+    def restore(self, proposed_folder_name, path_to_destination):
+        logging.info("Executing NCBI wholegenome restore {}{} ".format(proposed_folder_name, path_to_destination))
         try:
-            restore_folder = os.path.join(self.backup_dir, folder_name)
-            restore_folder_ok = self.check_restore_folder(restore_folder)
-            if not restore_folder_ok:
+            restore_folder = self.check_restore_date(self.backup_dir, proposed_folder_name)
+            if not restore_folder:
                 return False
+            
+            restore_destination = self.check_restore_destination(path_to_destination)
+            if not restore_destination:
+                return False 
+                
+            if not os.path.isdir(restore_destination):
+                os.makedirs(restore_destination,mode = self.folder_mode)
+            # copy the all the files in backup_dir/folder_name to destination_dir    
             os.chdir(restore_folder)
-            session_requests,connected = self.https_connect()
+            for filename in os.listdir(restore_folder):
+                shutil.copy2(filename, restore_destination)
+                
+                
+            os.chdir(restore_destination)
+            required_files = []   
+            #session_requests,connected = self.https_connect()
             with open(self.config['readme_file'], "r") as fp:
                 content = fp.readlines()
                 for line in content[6:]:
-                    a_file_ok = restore_a_file(line,session_requests)
-                    if not a_file_ok:
-                        logging.error("Failed to restore file{}".format(line))
-                        return False
-            session_requests.close()
-            # remove all the file and folders in destination_dir 
-            all_path = os.listdir(self.destination_dir) 
-            for a_path in all_path:
-                if os.path.isfile(a_path):
-                    os.remove(a_path)
-                if os.path.isdir(a_path):
-                    shutil.rmtree(path)
-                    
-            # copy the all the files in backup_dir/folder_name to destination_dir    
-            copy_tree(restore_folder, self.destination_dir)
-            # remove folders in restore folder
-            all_path = os.listdir(restore_folder) 
-            for a_path in all_path:
-                if os.path.isdir(a_path):
-                    shutil.rmtree(path) 
+                    required_files.append(line)   
+            restore_download_ok = self.restore_download(required_files, restore_destination)
+            if not restore_download_ok:
+                return False
         except Exception as e:
             logging.exception("NCBI wholegenome restore did not succeed. Error: {}".format(e))
             return False
                
         return True        
                 
-    def restore_a_file(self, line, session_requests):
-        try:
-            folder = line.split("\t")[0]
-            file_url = line.split("\t")[0]
-            file_name = url.split('/')[-1]
-            if not os.path.exists(folder):
-                os.makedirs(folder, mode = self.folder_mode)
-            os.chdir(folder)
-            a_file = self.download_a_file(file_name, file_url, session_requests)
-            md5_name = 'md5checksums.txt'
-            md5_url = file_url.replace(file_name, md5_name)
-            md5_file = self.download_a_file(md5_name, md5_url, session_requests)
-            md5_code = self.read_md5(md5_name, file_name)
-            a_file_success = self.check_md5(file_name, md5_code)
-            unzip_success = self.unzip_file_gz(file_name)
-            os.chdir('..')
-        except Exception as e:
-            logging.exception("Failed to restore a file {}. Error: {}".format(line, e))
-            return False
-        
+    def restore_download(self, file_list, restore_destination):
+        downloaded = 0 
+        file_list_downloaded=[]  
+        completed = False
+        attempt = 0
+        max_download_attempts = self.download_retry_num
+        while attempt < max_download_attempts and completed == False:
+            attempt += 1
+            try:
+                session_requests,connected = self.https_connect(); 
+                for a_file in file_list:
+                    if a_file not in file_list_downloaded:
+                        subdir, link = a_file.split("\t")
+                        #download  a genome zipped file
+                        file_name = link.split('/')[-1].strip("\n")
+                        file_url  = link.strip("\n")
+                        path_to_subdir = os.path.join(restore_destination, subdir)
+                        if not os.path.isdir(path_to_subdir):
+                            os.makedirs(path_to_subdir,mode = self.folder_mode )
+                        os.chdir(path_to_subdir)
+                        a_file = self.download_a_file(file_name, file_url, session_requests)
+                        md5_name = 'md5checksums.txt'
+                        md5_url = file_url.replace(file_name, md5_name)
+                        md5_file = self.download_a_file(md5_name, md5_url, session_requests)
+                        md5_code = self.read_md5(md5_name, file_name)
+                        a_file_success = self.check_md5(file_name, md5_code)
+                        unzip_success = False
+                        if a_file_success:
+                            unzip_success = self.unzip_file(file_name)
+                        if unzip_success:
+                            downloaded += 1
+                        if downloaded == len(file_list):
+                            completed = True
+                            break
+                        os.chdir("..")
+                session_requests.close()
+            except Exception as e:
+                logging.error("Failed to download all files on attempt {}: {}".format(attempt, e)) 
+                time.sleep(self.sleep_time)
+                    
+        if completed:
+            try:
+                for root, dirs, files in os.walk(restore_destination):
+                    for f in files:
+                        os.chmod(os.path.join(root, f), self.file_mode)
+            except Exception as e:
+                logging.error("Failed to change file mode {}".format(e))
+                return False
+                
         return True
         
-        #from readme+ file get 
     
-    '''

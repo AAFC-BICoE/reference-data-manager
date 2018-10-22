@@ -242,7 +242,7 @@ class BaseRefData():
             restore_date = ""
             minGap = -1;
             for f in os.listdir(backup_dir):
-                if os.path.isdir(os.path.join(backup_dir,f)) and check_restore_date_format(f):
+                if os.path.isdir(os.path.join(backup_dir,f)) and self.check_restore_date_format(f):
                     gap = self.count_gap_two_dates(proposed_date, f)
                     if gap >= 0 and minGap == -1:
                         minGap = gap
@@ -250,7 +250,7 @@ class BaseRefData():
                     if gap >= 0 and minGap > 0 and gap < minGap:
                         minGap = gap
                         restore_date = f
-                    print(restore_date)
+                    #print(restore_date)
             if restore_date:
                 restore_path = os.path.join(backup_dir, restore_date)
                 

@@ -49,6 +49,9 @@ def parse_input_args(argv):
     # NCBI whole genomes (e.g. genome sequences for bacteria, fungi )
     parser.add_argument('--update-ncbi-wholegenomes', help="Update NCBI whole genomes", dest="ncbi_whole_genome_update",
                         action = 'store_true', required=False)
+    parser.add_argument('--restore-ncbi-wholegenomes', help="Restore NCBI whole genomes. --restore-destination and \
+                     --restore-source are required", dest="ncbi_whole_genome_restore",
+                        action = 'store_true', required=False)
     # Green gene
     parser.add_argument('--update-greengene', help="Update GreenGene data", dest="greengene_update",
                         action = 'store_true', required=False)
@@ -66,6 +69,7 @@ def parse_input_args(argv):
             args.ncbi_subsets_update or \
             args.ncbi_subsets_restore or \
             args.ncbi_whole_genome_update or \
+            args.ncbi_whole_genome_restore or \
             args.greengene_update or \
             args.greengene_format or \
             args.unitedata_update):
@@ -156,7 +160,22 @@ def execute_script(input_args):
             print("NCBI whole genome data were updated successfully. It is located at: {}".format(
                 wholeGenomeData.destination_dir
             ))  
-            
+    
+    if parsed_args.ncbi_whole_genome_restore:
+        print("Restore NCBI whole genomes")
+        if not parsed_args.restore_destination:
+            print("Error, please provide the path of the destination for restoring")
+            exit(1)
+        if not parsed_args.restore_source:
+            print("Error, please provide the version (in format yyyy-mm-dd) of the database for restoring")
+            exit(1)
+        wholeGenomeData = NcbiWholeGenome(config_file)
+        success = wholeGenomeData.restore(parsed_args.restore_source, parsed_args.restore_destination)
+        if success:
+            print("NCBI wholeGenome reference data were restored successfully. It is located at: {}".format(
+                parsed_args.restore_destination
+            ))  
+                 
     if parsed_args.greengene_update:
         print("Running greengene update")
         greengene = GreenGeneData(config_file)
