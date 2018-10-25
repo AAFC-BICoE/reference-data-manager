@@ -61,20 +61,33 @@ def parse_input_args(argv):
     parser.add_argument('--update-unitedata', help="Update unite data", dest="unitedata_update",
                         action = 'store_true', required=False)
     args = parser.parse_args(argv)
-
-    if not (args.ncbi_blast_update or \
-            args.ncbi_blast_unzip or \
-            args.ncbi_taxonomy_update or \
-            args.ncbi_taxonomy_restore or \
-            args.ncbi_subsets_update or \
-            args.ncbi_subsets_restore or \
-            args.ncbi_whole_genome_update or \
-            args.ncbi_whole_genome_restore or \
-            args.greengene_update or \
-            args.greengene_format or \
-            args.unitedata_update):
+    
+    actions = []
+    if args.ncbi_blast_update:
+        actions.append('--update-ncbi-blast')
+    if args.ncbi_blast_unzip:
+        actions.append('--unzip-ncbi-blast')
+    if args.ncbi_taxonomy_update:
+        actions.append('--undate-ncbi-taxonomy')
+    if args.ncbi_taxonomy_restore:
+        actions.append('--restore-ncbi-taxonomy')
+    if args.ncbi_subsets_update:
+        actions.append('--update-ncbi-subsets')
+    if args.ncbi_subsets_restore:
+        actions.append('--restore-ncbi-subsets')
+    if args.ncbi_whole_genome_update:
+        actions.append('--update-ncbi-wholegenomes')
+    if args.ncbi_whole_genome_restore:
+        actions.append('--restore-ncbi-wholegenomes')
+    if args.greengene_update:
+        actions.append('--update-greengene')
+    if args.greengene_format:
+        actions.append('--restore-greengene')
+    if len(actions) == 0:
         parser.error('No action requested. Please add one of the required actions.')
-
+    if len(actions) > 1:
+        parser.error('Only one action is allowed; there are {} actions in your arguments {}'.format(len(actions), actions))
+        
     return args
 
 
