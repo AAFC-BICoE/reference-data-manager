@@ -7,7 +7,7 @@ chardet==3.0.4
 cryptography==2.2.2
 idna==2.7
 mkl-fft==1.0.6
-mkl-random==1.0.1
+mkl-random==1.0.1.1
 numpy==1.14.5
 pycparser==2.18
 pyOpenSSL==18.0.0
