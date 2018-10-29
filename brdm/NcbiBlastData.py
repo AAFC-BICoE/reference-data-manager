@@ -31,14 +31,14 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             logging.error("Failed to create destination/backup folder : {} {}".format(self.backup_dir, e))
 
     
-    def update(self):
+    def update(self, file_number=0):
         logging.info("Executing NCBI Blast update")
         # Download nrnt data into an intermediate folder
         temp_dir = self.create_tmp_dir(self.destination_dir)
         if not temp_dir:
             logging.error("Failed to create the temp_dir: {}, error{}".format(temp_dir, e))
             return False
-        success = self.download()
+        success = self.download(download_file_number=file_number)
         if not success:
             logging.error("Failed to download nrnt files. Update will not proceed.")
             return False
@@ -56,6 +56,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
         if not backup_success:
             logging.error("Failed to backup readme files. The update will not continue.")
             return False
+        
         # Delete all data from the destination folder
         clean_destination_ok = self.clean_destination_dir(self.destination_dir)
         if not clean_destination_ok:

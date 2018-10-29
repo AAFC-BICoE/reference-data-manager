@@ -13,6 +13,7 @@ class BaseRefData():
 
     def __init__(self, config_file):
         self.config = self.load_config(config_file)
+        self.current_dir = os.getcwd()
         self.download_retry_num = self.config['download_retry_num']
         self.connection_retry_num = self.config['connection_retry_num']
         self.sleep_time =  self.config['sleep_time']
@@ -137,11 +138,11 @@ class BaseRefData():
 
     def check_md5(self, file_name, md5_check):
         if not md5_check:
-            logging.error('empty md5_code')
+            logging.error('Empty md5_code. Failed to check md5')
             return False
         try:
-            file_data = open(file_name, 'rb')
-            md5_real = md5(file_data.read()).hexdigest()
+            with open(file_name, 'rb') as file_data:
+                md5_real = md5(file_data.read()).hexdigest()
         except Exception as e:
             logging.exception("Failed to check_md5. Error: {}".format(filename, e))
             return False
@@ -216,8 +217,18 @@ class BaseRefData():
         if os.path.isabs(proposed_destination):
             return proposed_destination
         else:
-            return os.path.join(str(Path.home()),proposed_destination)
-    
+            #return os.path.join(str(Path.home()),proposed_destination)
+            return os.path.join(self.current_dir,proposed_destination)
+    # Check if the provided path is an absolute path or not;
+    # 
+    '''   
+    def check_path(self, proposed_path):
+        if os.path.isabs(proposed_path):
+            return proposed_path
+        else:
+            return os.path.join(str(Path.home()),proposed_path)
+    '''
+        
     # The format of the restore date has to be yyyy-mm-dd        
     def check_restore_date_format(self,proposed_date):
         date_format = proposed_date.split("-")
@@ -265,7 +276,7 @@ class BaseRefData():
             logging.error("Failed to check restore folder, error{}".format(e))
             return False
         
-        logging.info("Required restore_date {}; Real restore_date {} ".format(proposed_date, restore_date))
-        print("Required restore_date " + proposed_date +"; Real restore_date "+ restore_date)
+        logging.info("Required --restore-date {}; Real --restore-date {} ".format(proposed_date, restore_date))
+        print("Required --restore-date " + proposed_date +"; Real --restore-date "+ restore_date)
         return restore_path
     
