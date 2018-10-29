@@ -34,6 +34,7 @@ dependencies:
   - chardet=3.0.4=py35_3
   - cryptography=2.3.1=py35hdffb7b8_0
   - cryptography-vectors=2.3.1=py35_0
+  - cython=0.28.5=py35hfc679d8_0
   - gmp=6.1.2=hfc679d8_0
   - gnutls=3.5.19=h2a4e5f8_1
   - icu=58.2=hfc679d8_0
