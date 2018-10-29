@@ -45,7 +45,7 @@ setup(
 
     include_package_data=True,
 
-    install_requires = requires,
+    #install_requires = requires,
 
     scripts=['main.py','rdm_env_setting.yaml'],
 
