@@ -22,7 +22,7 @@ if os.path.exists(requires_file):
 
 setup(
     name="reference-data-manager",
-    version="0.3.3",
+    version="0.3.4",
 
     description='''Bioinformatics Reference Data Manager is an application used to download, backup and update of \
     reference data, required for various bioinformatics analysis''',
@@ -53,11 +53,12 @@ setup(
     
     #install_requires = requires,
     
-    scripts=['main.py','rdm_env_setting.yaml', 'tests/TestNcbiTaxonomy.py'],
+    scripts=['main.py','rdm_env_setting.yaml'],
 
     entry_points={
           'console_scripts': [
               'brdm = main:main',
+              'test_ncbi_taxonomy = tests/TestNcbiTaxonomy:main',
           ],
       },
 
