@@ -1,8 +1,7 @@
 import unittest
 import os
-parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-os.sys.path.insert(0,parentdir)
 from brdm.NcbiBlastData import NcbiBlastData
+
 class TestNcbiBlastData(unittest.TestCase):
 
     @classmethod
@@ -27,10 +26,12 @@ class TestNcbiBlastData(unittest.TestCase):
         success = self.fixture.update(file_number =  files)
         self.assertTrue(success, "NCBI update did not return True.")
         
+    
     def test_2_unzip(self):
         print("Unzip ncbi nrnt blast...")
         success = self.fixture.unzip()
         self.assertTrue(success, "NCBI unzip did not return True.")
+    
     
     def test_3_readme(self):
         print("Check readme files...")

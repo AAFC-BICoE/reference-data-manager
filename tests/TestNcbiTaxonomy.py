@@ -1,10 +1,6 @@
 import unittest
 import os
 from time import gmtime, strftime
-
-#parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-#os.sys.path.insert(0,parentdir)
-
 from brdm.NcbiTaxonomyData import NcbiTaxonomyData
 
 class TestNcbiTaxonomyData(unittest.TestCase):
@@ -27,6 +23,7 @@ class TestNcbiTaxonomyData(unittest.TestCase):
     '''
         
     def test_1_getConfig(self):
+        print('Check config file...')
         self.assertEqual(self.fixture.login_url, "https://ftp.ncbi.nlm.nih.gov", "login_url OK" )
         self.assertEqual(self.fixture.download_file, 
                          "new_taxdump.tar.gz", 
@@ -34,7 +31,7 @@ class TestNcbiTaxonomyData(unittest.TestCase):
     
        
     def test_2_update(self):
-        print("test taxonomy update")
+        print('Update ncbi taxonomy...')
         success = self.fixture.update()
         self.assertTrue(success, "NCBI update did not return True.")
         ncbi_readme = os.path.join(self.fixture.destination_dir, self.fixture.info_file_name)
@@ -43,6 +40,7 @@ class TestNcbiTaxonomyData(unittest.TestCase):
         self.assertTrue(os.path.isfile(readme_file), "RDM's's README+ file is not found in the download directory.")
     
     def test_3_restore(self):
+        print('Restore ncbi taxonomy...')
         success = self.fixture.restore(strftime("%Y-%m-%d", gmtime()), "restoreTaxonomy")
         self.assertTrue(success, "NCBI update did not return True.")
         

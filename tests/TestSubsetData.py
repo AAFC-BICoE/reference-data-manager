@@ -1,9 +1,6 @@
 import unittest
 import os
 from time import gmtime, strftime
-parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-os.sys.path.insert(0,parentdir)
-
 from brdm.NcbiSubsetData import NcbiSubsetData
 
 class TestNcbiSebsetData(unittest.TestCase):
@@ -26,16 +23,21 @@ class TestNcbiSebsetData(unittest.TestCase):
     '''
     
     def test_1_getSubsetList(self):
+        print('Check config file...')
         self.assertEqual(self.fixture.query[0], "CO1p | COI and Phyllocnistis citrella", "query1 OK" )
         self.assertEqual(self.fixture.query[1], "ITSD | Internal Transcribed Spacer[All Fields] and Diplodia seriata", "query2 OK" )
-        
+    
+     
     def test_2_update(self):
+        print('Update ncbi subsets...')
         success = self.fixture.update()
         self.assertTrue(success, "NCBI update did not return True.")
         readme_file = os.path.join(self.fixture.destination_dir,"README+")
         self.assertTrue(os.path.isfile(readme_file), "RDM's's README+ file is not found in the download directory.")
+      
         
     def test_3_restore(self):
+        print('Restore ncbi subsets...')
         success = self.fixture.restore(strftime("%Y-%m-%d", gmtime()), "restoreTaxonomy")
         self.assertTrue(success, "NCBI update did not return True.")
     
