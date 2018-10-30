@@ -42,7 +42,7 @@ setup(
     ),
 
     #packages=find_packages(exclude=['test*', 'Test*']),
-    packages=find_packages();
+    packages=find_packages(),
     
     package_data={
         '': ['README.md', 'LICENSE'],
