@@ -29,7 +29,7 @@ class TestNcbiTaxonomyData(unittest.TestCase):
                          "new_taxdump.tar.gz", 
                          "download_file address OK" )
     
-       
+      
     def test_2_update(self):
         print('Update ncbi taxonomy...')
         success = self.fixture.update()
@@ -38,6 +38,7 @@ class TestNcbiTaxonomyData(unittest.TestCase):
         self.assertTrue(os.path.isfile(ncbi_readme), "NCBI README file is not found in the download directory.")
         readme_file = os.path.join(self.fixture.destination_dir, "README+")
         self.assertTrue(os.path.isfile(readme_file), "RDM's's README+ file is not found in the download directory.")
+    
     
     def test_3_restore(self):
         print('Restore ncbi taxonomy...')
