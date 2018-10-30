@@ -53,7 +53,7 @@ setup(
     
     #install_requires = requires,
     
-    scripts=['main.py','rdm_env_setting.yaml', '/tests/TestNcbiTaxonomy.py'],
+    scripts=['main.py','rdm_env_setting.yaml', 'tests/TestNcbiTaxonomy.py'],
 
     entry_points={
           'console_scripts': [
