@@ -290,7 +290,7 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
             logging.error("Path to the local nt database is missing/incorrect; please provide the ABSOLUTE path in config.yaml file ")
             local_nt_taxonomy_ok = False
         else:
-            check_nt = "blastdbcmd -db "+self.path_to_nt+ " -info"
+            check_nt = "blastdbcmd -db "+self.path_to_nt+ " -info  > /dev/null 2>&1"
             nt_ok = os.system(check_nt)
             if nt_ok != 0:
                 local_nt_taxonomy_ok = False
