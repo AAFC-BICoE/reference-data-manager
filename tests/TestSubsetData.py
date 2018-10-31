@@ -38,8 +38,9 @@ class TestNcbiSebsetData(unittest.TestCase):
         
     def test_3_restore(self):
         print('Restore ncbi subsets...')
-        success = self.fixture.restore(strftime("%Y-%m-%d", gmtime()), "restoreTaxonomy")
-        self.assertTrue(success, "NCBI update did not return True.")
+        success = self.fixture.restore(strftime("%Y-%m-%d", gmtime()), \
+                                       os.path.join(self.fixture.destination_dir,"restoreSubsets"))
+        self.assertTrue(success, "NCBI restore did not return True.")
     
     '''
     
