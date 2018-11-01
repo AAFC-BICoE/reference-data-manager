@@ -53,14 +53,14 @@ class BaseRefData():
                 config = yaml.load(stream)
 
         except yaml.YAMLError as e:
-            print("Could not load configuration file. RDM will not run. Error: {}".format(e))
+            print("Could not load configuration file. Error: {}".format(e))
             exit(1)
         except FileNotFoundError as e:
-            print('Configuration file full path: {}'.format(os.path.abspath(config_file)))
-            print("Configuration file {} could not be found. RDM will not run. Error: {}".format(config_file, e))
+            print('Cannot find the configuration file {}'.format(os.path.abspath(config_file)))
+            print("Double check the config file in that folder or provide a config file by --config-file. ")
             exit(1)
         except Exception as msg:
-            print("Error while loading configuration file {}. RDM will not run. Error: {}".format(config_file))
+            print("Error while loading configuration file {}. Error: {}".format(config_file))
             exit(1)
 
         logging.info("RDM's configuration file was successfully loaded. File name: {}".format(config_file))
