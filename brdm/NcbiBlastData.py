@@ -123,7 +123,7 @@ class NcbiBlastData(NcbiData, RefDataInterface):
             session_requests,connected = self.https_connect();
             html = session_requests.get(url)
             soup = BeautifulSoup(html.content, "html.parser")
-            nr_nt_re = re.compile('(nr|nt)\.\d{2}\.tar\.gz$')
+            nr_nt_re = re.compile('(nr|nt)\.\d{2,3}\.tar\.gz$')
             links = soup.find_all('a')
             for a_link in links:
                 file_name = a_link.string
