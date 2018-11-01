@@ -57,7 +57,7 @@ class BaseRefData():
             exit(1)
         except FileNotFoundError as e:
             print('Cannot find the configuration file {}'.format(os.path.abspath(config_file)))
-            print("Double check the config file in that folder or provide a config file by --config-file. ")
+            print("Double check the config file in folder brdm/ or provide a config file by --config-file. ")
             exit(1)
         except Exception as msg:
             print("Error while loading configuration file {}. Error: {}".format(config_file))
