@@ -24,23 +24,27 @@ class TestNcbiTaxonomyData(unittest.TestCase):
         
     def test_1_getConfig(self):
         print('Check config file...')
-        self.assertEqual(self.fixture.login_url, "https://ftp.ncbi.nlm.nih.gov", "login_url OK" )
+        self.assertEqual(self.fixture.login_url, "https://ftp.ncbi.nlm.nih.gov", "Wrong login_url" )
         self.assertEqual(self.fixture.download_file, 
                          "new_taxdump.tar.gz", 
-                         "download_file address OK" )
+                         "Wrong download_file address" )
     
       
     def test_2_update(self):
         print('Update ncbi taxonomy...')
         success = self.fixture.update()
         self.assertTrue(success, "NCBI update did not return True.")
+        
+        
+    def test_3_readme(self):
+        print('Check readme files...')
         ncbi_readme = os.path.join(self.fixture.destination_dir, self.fixture.info_file_name)
-        self.assertTrue(os.path.isfile(ncbi_readme), "NCBI README file is not found in the download directory.")
+        self.assertTrue(os.path.isfile(ncbi_readme), "NCBI taxonomy README file is not found in the download directory.")
         readme_file = os.path.join(self.fixture.destination_dir, "README+")
         self.assertTrue(os.path.isfile(readme_file), "RDM's's README+ file is not found in the download directory.")
     
     
-    def test_3_restore(self):
+    def test_4_restore(self):
         print('Restore ncbi taxonomy...')
         success = self.fixture.restore(strftime("%Y-%m-%d", gmtime()), \
                                        os.path.join(self.fixture.destination_dir,"restoreTaxonomy"))

@@ -21,17 +21,15 @@ class TestNcbiSebsetData(unittest.TestCase):
 
         pass
     '''
-    
-    def test_1_getSubsetList(self):
-        print('Check config file...')
-        self.assertEqual(self.fixture.query[0], "CO1p | COI and Phyllocnistis citrella", "query1 OK" )
-        self.assertEqual(self.fixture.query[1], "ITSD | Internal Transcribed Spacer[All Fields] and Diplodia seriata", "query2 OK" )
-    
-     
-    def test_2_update(self):
+        
+    def test_1_update(self):
         print('Update ncbi subsets...')
         success = self.fixture.update()
         self.assertTrue(success, "NCBI update did not return True.")
+        
+        
+    def test_2_readme(self):
+        print("Check readme files...")
         readme_file = os.path.join(self.fixture.destination_dir,"README+")
         self.assertTrue(os.path.isfile(readme_file), "RDM's's README+ file is not found in the download directory.")
       
@@ -43,6 +41,10 @@ class TestNcbiSebsetData(unittest.TestCase):
         self.assertTrue(success, "NCBI restore did not return True.")
     
     '''
+    def test_1_getSubsetList(self):
+        print('Check config file...')
+        self.assertEqual(self.fixture.query[0], "CO1p | COI and Phyllocnistis citrella", "query1 OK" )
+        self.assertEqual(self.fixture.query[1], "ITSD | Internal Transcribed Spacer[All Fields] and Diplodia seriata", "query2 OK" )
     
     def testDownload_a_subset(self):
         

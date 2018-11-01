@@ -20,20 +20,28 @@ class TestNcbiBlastData(unittest.TestCase):
 
         pass
     '''
+    
+    def test_1_get_all_file(self):
+        print("Get ncbi nrnt blast file list...")
+        folder_url = os.path.join(self.fixture.login_url, self.fixture.download_folder)
+        all_file = self.fixture.get_all_file(folder_url)
+        print("number of nrnt files :", len(all_file))
+        self.assertGreater(len(all_file), 173, "missing some nrnt files.")
+    
         
-    def test_1_update(self, files = 2):
+    def test_2_update(self, files = 2):
         print("Update ncbi nrnt blast...")
         success = self.fixture.update(file_number =  files)
-        self.assertTrue(success, "NCBI update did not return True.")
+        self.assertTrue(success, "NCBI nrnt update did not return True.")
         
     
-    def test_2_unzip(self):
+    def test_3_unzip(self):
         print("Unzip ncbi nrnt blast...")
         success = self.fixture.unzip()
-        self.assertTrue(success, "NCBI unzip did not return True.")
+        self.assertTrue(success, "NCBI nrnt unzip did not return True.")
     
     
-    def test_3_readme(self):
+    def test_4_readme(self):
         print("Check readme files...")
         ncbi_readme = os.path.join(self.fixture.destination_dir, self.fixture.info_file_name)
         self.assertTrue(os.path.isfile(ncbi_readme), "NCBI README file is not found in the download directory.")
