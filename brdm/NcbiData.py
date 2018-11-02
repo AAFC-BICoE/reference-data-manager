@@ -83,7 +83,7 @@ class NcbiData(BaseRefData, RefDataInterface):
         chunkSize = self.chunk_size
         totalSize = 0
         try:    
-            res = session_requests.get(file_address, stream=True, verify=False)
+            res = session_requests.get(file_address, stream=True)
             with open(file_name, 'wb') as output:
                 chunknumber = 0
                 for chunk in res.iter_content(chunk_size=chunkSize, decode_unicode=False):
