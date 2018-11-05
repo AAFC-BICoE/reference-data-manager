@@ -57,7 +57,7 @@ def parse_input_args(argv):
             required=False)
     parser.add_argument('--restore-ncbi-subsets', help='Restore NCBI subsets \
             (ITS, CO1, etc.) --restore-destination and \
-            --restore-source are required.' dest='ncbi_subsets_restore', 
+            --restore-source are required.', dest='ncbi_subsets_restore', 
             action = 'store_true', required=False)
     # NCBI whole genomes (e.g. genome sequences for bacteria, fungi )
     parser.add_argument('--update-ncbi-wholegenomes', help='Update NCBI whole \
@@ -100,10 +100,10 @@ def parse_input_args(argv):
         actions.append('--restore-greengene')
     if len(actions) == 0:
         parser.error('No action requested. Please add one of the required \
-                     actions (e.g. --update-ncbi-subsets')
+        \nactions (e.g. --update-ncbi-subsets)')
     if len(actions) > 1:
         parser.error('Only one action is allowed; there are {} actions in \
-                    your arguments {}'.format(len(actions), actions)) 
+                    \nyour arguments {}'.format(len(actions), actions)) 
     return args
  
 def execute_script(input_args):
@@ -119,7 +119,7 @@ def execute_script(input_args):
         success = blastData.update()
         if success:
             print('NCBI nrnt blast database were downloaded successfully. \
-            It is located at: {}'.format(blastData.destination_dir))
+            \nIt is located at: {}'.format(blastData.destination_dir))
             
     if parsed_args.ncbi_blast_unzip:
         print('Running NCBI nrnt blast database unzip')
@@ -127,7 +127,7 @@ def execute_script(input_args):
         success = blastData.unzip()
         if success:
             print('NCBI nrnt blast database were unzipped successfully. \
-            It is located at: {}'.format(blastData.destination_dir))
+            \nIt is located at: {}'.format(blastData.destination_dir))
         
     if parsed_args.ncbi_taxonomy_update:
         print('Running NCBI Taxonomy update')
@@ -135,24 +135,24 @@ def execute_script(input_args):
         success = taxonomyData.update()
         if success:
             print('NCBI taxonomy data were updated successfully. \
-            It is located at: {}'.format(taxonomyData.destination_dir))
+            \nIt is located at: {}'.format(taxonomyData.destination_dir))
             
     if parsed_args.ncbi_taxonomy_restore:
         print('Running NCBI Taxonomy restore')
         if not parsed_args.restore_destination:
-            print('Error: please provide the path of the destination for \
-            restoring')
+            print('Error: please provide the path of the destination for', \
+            'restoring')
             exit(1)
         if not parsed_args.restore_source:
-            print('Error: please provide the version (in date format \
-            yyyy-mm-dd) of the database for restoring')
+            print('Error: please provide the version (in date format', \
+            'yyyy-mm-dd) of the database for restoring')
             exit(1)
         taxonomyData = NcbiTaxonomyData(config_file)
         success = taxonomyData.restore(parsed_args.restore_source,
                                        parsed_args.restore_destination)
         if success:
             print('NCBI taxonomy data were restored successfully. \
-            It is located at: {}'.format(parsed_args.restore_destination))
+            \nIt is located at: {}'.format(parsed_args.restore_destination))
             
     if parsed_args.ncbi_subsets_update:
         print('Running NCBI Subsets update')
@@ -160,24 +160,24 @@ def execute_script(input_args):
         success = subsetData.update()
         if success:
             print('NCBI subsets reference data were updated successfully. \
-            It is located at: {}'.format(subsetData.destination_dir)) 
+            \nIt is located at: {}'.format(subsetData.destination_dir)) 
     
     if parsed_args.ncbi_subsets_restore:
         print('Restore NCBI subsets:')
         if not parsed_args.restore_destination:
-            print('Error, please provide the path of the destination for \
-            restoring')
+            print('Error, please provide the path of the destination for ', \
+            'restoring')
             exit(1)
         if not parsed_args.restore_source:
-            print('Error, please provide the version (in date format \
-            yyyy-mm-dd) of the database for restoring')
+            print('Error, please provide the version (in date format ',\
+            'yyyy-mm-dd) of the database for restoring')
             exit(1)
         subsetData = NcbiSubsetData(config_file)
         success = subsetData.restore(parsed_args.restore_source, 
                                      parsed_args.restore_destination)
         if success:
             print('NCBI subsets reference data were restored successfully. \
-            It is located at: {}'.format(parsed_args.restore_destination))
+            \nIt is located at: {}'.format(parsed_args.restore_destination))
                           
     if parsed_args.ncbi_whole_genome_update:
         print('Running NCBI whole genome update')
@@ -185,24 +185,24 @@ def execute_script(input_args):
         success = wholeGenomeData.update()
         if success:
             print('NCBI whole genome data were updated successfully. \
-            It is located at: {}'.format(wholeGenomeData.destination_dir))  
+            \nIt is located at: {}'.format(wholeGenomeData.destination_dir))  
     
     if parsed_args.ncbi_whole_genome_restore:
         print('Restore NCBI whole genomes')
         if not parsed_args.restore_destination:
-            print('Error, please provide the path of the destination for \
-            restoring')
+            print('Error, please provide the path of the destination for ',\
+            'restoring')
             exit(1)
         if not parsed_args.restore_source:
-            print('Error, please provide the version (in format \
-            yyyy-mm-dd) of the database for restoring')
+            print('Error, please provide the version (in format ', \
+            'yyyy-mm-dd) of the database for restoring')
             exit(1)
         wholeGenomeData = NcbiWholeGenome(config_file)
         success = wholeGenomeData.restore(parsed_args.restore_source, 
                                           parsed_args.restore_destination)
         if success:
             print('NCBI wholeGenome data were restored successfully. \
-            It is located at: {}'.format(parsed_args.restore_destination))  
+            \nIt is located at: {}'.format(parsed_args.restore_destination))  
                  
     if parsed_args.greengene_update:
         print('Running greengene update')
@@ -210,7 +210,7 @@ def execute_script(input_args):
         success = greengene.update()
         if success:
             print('GreenGene data were updated successfully. \
-            It is located at: {}'.format(greengene.destination_dir))
+            \nIt is located at: {}'.format(greengene.destination_dir))
             
     if parsed_args.greengene_format:
         print('Running greengene format')
@@ -218,7 +218,7 @@ def execute_script(input_args):
         success = greengene.format()
         if success:
             print('GreenGene data were format successfully. \
-            It is located at: {}'.format(greengene.destination_dir))
+            \nIt is located at: {}'.format(greengene.destination_dir))
             
     '''        
     if parsed_args.unitedata_update:

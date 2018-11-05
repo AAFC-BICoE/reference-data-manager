@@ -30,7 +30,7 @@ class BaseRefData():
                 os.makedirs(self.backup_dir, mode = self.folder_mode)
         except Exception as e:
             logging.error('Failed to create the root_dir or backup_dir with \
-            error: {}'.format(e))
+            \nerror: {}'.format(e))
          
     @property
     def destination_dir(self):
@@ -58,12 +58,11 @@ class BaseRefData():
         except FileNotFoundError as e:
             print('Cannot find the configuration file {}'.
                   format(os.path.abspath(config_file)))
-            print('Double check the config file in folder brdm/ or \
-                  provide a config file by --config-file.')
+            print('Double check the config file in folder brdm/ or', \
+                  'provide a config file by --config-file.')
             exit(1)
         except Exception as msg:
-            print('Error while loading configuration file {}. Error: {}'
-                  .format(config_file))
+            print('Error while loading configuration file: {}'.format(msg))
             exit(1)
         logging.info('RDM configuration file was successfully loaded. \
                      File name: {}'.format(config_file))
@@ -78,8 +77,8 @@ class BaseRefData():
                     shutil.copyfileobj(f_in, f_out)
                 self.delete_file(filename_in)
             except Exception as e:
-                logging.exception('Failed to unzip file {}. Error: {}'.
-                                  format(filename_in, e))
+                logging.exception('Failed to unzip file {}. Error: {}' \
+                                  .format(filename_in, e))
                 return False
             
         if filename_in.endswith('tar.gz'):
@@ -88,8 +87,8 @@ class BaseRefData():
                     tar.extractall()
                 self.delete_file(filename_in)
             except Exception as e:
-                logging.exception('Failed to exctract file {}. Error: {}'.
-                                  format(filename_in, e))
+                logging.exception('Failed to exctract file {}. Error: {}' \
+                                  .format(filename_in, e))
                 return False
         
         if filename_in.endswith('.zip'):
@@ -98,8 +97,8 @@ class BaseRefData():
                     zip.extractall()
                 self.delete_file(filename_in)
             except Exception as e:
-                logging.exception('Failed to exctract file {}. Error: {}'.
-                                  format(filename_in, e))
+                logging.exception('Failed to exctract file {}. Error: {}' \
+                                  .format(filename_in, e))
                 return False
         return True
 
@@ -108,8 +107,8 @@ class BaseRefData():
             os.remove(full_file_name)
             logging.info('File deleted: {}'.format(full_file_name))
         except Exception as e:
-            logging.exception('Failed to delete a file {}. Error: {}'.
-                              format(full_file_name, e))
+            logging.exception('Failed to delete a file {}. Error: {}' \
+                              .format(full_file_name, e))
 
     def write_readme(self, download_url, downloaded_files, 
                      download_failed_files=[], comment='', execution_time=0):
@@ -123,8 +122,8 @@ class BaseRefData():
                 f.write('Downloaded on: {}\n'.format(datetime.datetime.now()))
                 f.write('Downloaded from: {}\n'.format(download_url))
                 if execution_time:
-                    msg = 'Download time: {} secs \n'.
-                    format(timedelta(seconds=round(execution_time)))
+                    msg = 'Download time: {} secs \n' \
+                           .format(timedelta(seconds=round(execution_time)))
                     f.write(msg)
                 f.write('List of downloaded files: \n')
                 for file in downloaded_files:
@@ -136,11 +135,11 @@ class BaseRefData():
                         f.write('{}\n'.format(file))
             os.chmod(file_name, self.file_mode)
         except Exception as e:
-            logging.exception('Failed to write_readme. Error: {}'
+            logging.exception('Failed to write_readme. Error: {}' \
                               .format(filename, e))
             return False
 
-        logging.info('Finished writing an application README file: {}'
+        logging.info('Finished writing an application README file: {}' \
                      .format(file_name))
         return True
 
@@ -152,7 +151,7 @@ class BaseRefData():
             with open(file_name, 'rb') as file_data:
                 md5_real = md5(file_data.read()).hexdigest()
         except Exception as e:
-            logging.exception('Failed to check_md5. Error: {}'
+            logging.exception('Failed to check_md5. Error: {}' \
                               .format(filename, e))
             return False
         return md5_check == md5_real
@@ -167,7 +166,7 @@ class BaseRefData():
                 shutil.rmtree(full_dir_name)
             os.makedirs(full_dir_name, mode = self.folder_mode)
         except:
-            logging.exception('Could not create a backup directory: {}'
+            logging.exception('Could not create a backup directory: {}' \
                               .format(full_dir_name))
             return False
         return full_dir_name + '/'
@@ -183,7 +182,7 @@ class BaseRefData():
             os.makedirs(temp_dir)
             os.chdir(temp_dir)
         except Exception as e:
-            logging.error('Failed to create the temp_dir: {}, error{}'
+            logging.error('Failed to create the temp_dir: {}, error{}' \
                           .format(temp_dir, e))
             return False
         return temp_dir
@@ -265,10 +264,10 @@ class BaseRefData():
                 restore_path = os.path.join(backup_dir, restore_date) 
             if not os.path.exists(restore_path):
                 logging.error('could not restore, database created on/before \
-                the provided date does not exist.')
+                \nthe provided date does not exist.')
                 return False
             if len(os.listdir(restore_path) ) == 0:
-                logging.error('could not restore, {} is an empty folder.'
+                logging.error('could not restore, {} is an empty folder.' \
                               .format(restore_path))
                 return False   
         except Exception as e:
@@ -277,6 +276,6 @@ class BaseRefData():
         logging.info('Required --restore-date {}; Real --restore-date {}.'
                      .format(proposed_date, restore_date))
         print('Required --restore-date ' + proposed_date +'; \
-              Real --restore-date '+ restore_date)
+              \nReal --restore-date '+ restore_date)
         return restore_path
     

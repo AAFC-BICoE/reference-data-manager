@@ -20,14 +20,13 @@ class NcbiData(BaseRefData, RefDataInterface):
             if not os.path.exists(self.destination_dir):
                 os.makedirs(self.destination_dir, mode = self.folder_mode)
             os.chdir(self.destination_dir)
-
             self.backup_dir = os.path.join(super(NcbiData, self).backup_dir, 
                                     self.config['ncbi']['destination_folder'])
             if not os.path.exists(self.backup_dir):
                 os.makedirs(self.backup_dir, mode = self.folder_mode)
         except Exception as e:
             logging.error('Failed to create the destination or backup_dir \
-                          with error {}'.format(e))
+            \nwith error {}'.format(e))
 
     @property
     def destination_dir(self):
@@ -77,7 +76,7 @@ class NcbiData(BaseRefData, RefDataInterface):
                 connected = True
             except Exception as e:
                 logging.error("Error connecting to login_url {}: {} \
-                              Retrying...".format(self.login_url, e))
+                              \nRetrying...".format(self.login_url, e))
                 time.sleep(self.sleep_time)
                 retry_num -= 1
         return session_requests, connected
@@ -98,7 +97,7 @@ class NcbiData(BaseRefData, RefDataInterface):
                         output.write(chunk)
             os.chmod(file_name, self.file_mode)
         except Exception as e:
-            logging.exception('Failed to download file {}.{}'
+            logging.exception('Failed to download file {}.{}' \
                               .format(file_name,e))
             return False
         return True
