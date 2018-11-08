@@ -1,7 +1,7 @@
 import abc
 
-class RefDataInterface(metaclass=abc.ABCMeta):
 
+class RefDataInterface(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def download(self):
@@ -22,4 +22,3 @@ class RefDataInterface(metaclass=abc.ABCMeta):
     def restore(self):
         raise NotImplementedError('Need to define update method to \
         use this base class.')
-

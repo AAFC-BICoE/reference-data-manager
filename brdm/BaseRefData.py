@@ -1,5 +1,6 @@
 import yaml
-import os, shutil
+import os
+import shutil
 import logging.config
 import datetime
 import tarfile
@@ -9,29 +10,30 @@ from pathlib import Path
 from hashlib import md5
 from datetime import timedelta
 
+
 class BaseRefData():
 
-
     def __init__(self, config_file):
+        """Initialize the object"""
         self.config = self.load_config(config_file)
         self.current_dir = os.getcwd()
         self.download_retry_num = self.config['download_retry_num']
         self.connection_retry_num = self.config['connection_retry_num']
-        self.sleep_time =  self.config['sleep_time']
-        self.folder_mode = int(self.config['folder_mode'],8)
-        self.file_mode = int(self.config['file_mode'],8)
+        self.sleep_time = self.config['sleep_time']
+        self.folder_mode = int(self.config['folder_mode'], 8)
+        self.file_mode = int(self.config['file_mode'], 8)
         logging.config.dictConfig(self.config['logging'])
         try:
             self.destination_dir = os.path.abspath(self.config['root_folder'])
             if not os.path.exists(self.destination_dir):
-                os.makedirs(self.destination_dir, mode = self.folder_mode)
+                os.makedirs(self.destination_dir, mode=self.folder_mode)
             self.backup_dir = os.path.abspath(self.config['backup_folder'])
             if not os.path.exists(self.backup_dir):
-                os.makedirs(self.backup_dir, mode = self.folder_mode)
+                os.makedirs(self.backup_dir, mode=self.folder_mode)
         except Exception as e:
             logging.error('Failed to create the root_dir or backup_dir with \
             \nerror: {}'.format(e))
-         
+
     @property
     def destination_dir(self):
         return self._destination_dir
@@ -49,6 +51,7 @@ class BaseRefData():
         self._backup_dir = value
 
     def load_config(self, config_file):
+        """Load the parameters in config file."""
         try:
             with open(config_file, 'r') as stream:
                 config = yaml.load(stream)
@@ -56,9 +59,9 @@ class BaseRefData():
             print('Could not load configuration file. Error: {}'.format(e))
             exit(1)
         except FileNotFoundError as e:
-            print('Cannot find the configuration file {}'.
-                  format(os.path.abspath(config_file)))
-            print('Double check the config file in folder brdm/ or', \
+            print('Cannot find the configuration file {}'
+                  .format(os.path.abspath(config_file)))
+            print('Double check the config file in folder brdm/ or',
                   'provide a config file by --config-file.')
             exit(1)
         except Exception as msg:
@@ -67,51 +70,54 @@ class BaseRefData():
         logging.info('RDM configuration file was successfully loaded. \
                      File name: {}'.format(config_file))
         return config
-            
+
     def unzip_file(self, filename_in):
+        """Unzip file"""
         if filename_in.endswith('.gz') and not filename_in.endswith('tar.gz'):
             try:
                 filename_out = filename_in[:-3]
                 with gzip.open(filename_in, 'rb') as f_in, \
-                     open(filename_out, 'wb') as f_out:
+                        open(filename_out, 'wb') as f_out:
                     shutil.copyfileobj(f_in, f_out)
                 self.delete_file(filename_in)
             except Exception as e:
-                logging.exception('Failed to unzip file {}. Error: {}' \
+                logging.exception('Failed to unzip file {}. Error: {}'
                                   .format(filename_in, e))
                 return False
-            
+
         if filename_in.endswith('tar.gz'):
             try:
                 with tarfile.open(filename_in, 'r:gz') as tar:
                     tar.extractall()
                 self.delete_file(filename_in)
             except Exception as e:
-                logging.exception('Failed to exctract file {}. Error: {}' \
+                logging.exception('Failed to exctract file {}. Error: {}'
                                   .format(filename_in, e))
                 return False
-        
+
         if filename_in.endswith('.zip'):
             try:
-                with zipfile.ZipFile(filename_in,'r') as zip:
+                with zipfile.ZipFile(filename_in, 'r') as zip:
                     zip.extractall()
                 self.delete_file(filename_in)
             except Exception as e:
-                logging.exception('Failed to exctract file {}. Error: {}' \
+                logging.exception('Failed to exctract file {}. Error: {}'
                                   .format(filename_in, e))
                 return False
         return True
 
     def delete_file(self, full_file_name):
+        """Method to delete a file"""
         try:
             os.remove(full_file_name)
             logging.info('File deleted: {}'.format(full_file_name))
         except Exception as e:
-            logging.exception('Failed to delete a file {}. Error: {}' \
+            logging.exception('Failed to delete a file {}. Error: {}'
                               .format(full_file_name, e))
 
-    def write_readme(self, download_url, downloaded_files, 
+    def write_readme(self, download_url, downloaded_files,
                      download_failed_files=[], comment='', execution_time=0):
+        """Write information to application read me file"""
         file_name = self.config['readme_file']
         try:
             with open(file_name, 'w') as f:
@@ -135,15 +141,16 @@ class BaseRefData():
                         f.write('{}\n'.format(file))
             os.chmod(file_name, self.file_mode)
         except Exception as e:
-            logging.exception('Failed to write_readme. Error: {}' \
+            logging.exception('Failed to write_readme. Error: {}'
                               .format(filename, e))
             return False
 
-        logging.info('Finished writing an application README file: {}' \
+        logging.info('Finished writing an application README file: {}'
                      .format(file_name))
         return True
 
     def check_md5(self, file_name, md5_check):
+        """Checksum md5"""
         if not md5_check:
             logging.error('Empty md5_code. Failed to check md5')
             return False
@@ -151,44 +158,47 @@ class BaseRefData():
             with open(file_name, 'rb') as file_data:
                 md5_real = md5(file_data.read()).hexdigest()
         except Exception as e:
-            logging.exception('Failed to check_md5. Error: {}' \
+            logging.exception('Failed to check_md5. Error: {}'
                               .format(filename, e))
             return False
         return md5_check == md5_real
 
-    # All backup dirs are named as date: yyyy-mm-dd. 
-    #They will be placed in appropriate sub-folder
+    # All backup dirs are named as date: yyyy-mm-dd.
+    # They will be placed in appropriate sub-folder
     def create_backup_dir(self):
+        """Create backup directory"""
         short_dir_name = datetime.datetime.now().strftime('%Y-%m-%d')
         full_dir_name = '{}{}'.format(self.backup_dir, short_dir_name)
         try:
             if os.path.exists(full_dir_name):
                 shutil.rmtree(full_dir_name)
-            os.makedirs(full_dir_name, mode = self.folder_mode)
-        except:
-            logging.exception('Could not create a backup directory: {}' \
+            os.makedirs(full_dir_name, mode=self.folder_mode)
+        except Exception as e:
+            logging.exception('Could not create a backup directory: {}'
                               .format(full_dir_name))
             return False
         return full_dir_name + '/'
-    
+
     # Create an intermediate dir for holding updated new data
     # The data will be move to destination dir if download successful
     def create_tmp_dir(self, destination_path):
+        """Create an intermediate dir for holding new data"""
         try:
-            #temp_dir = tempfile.mkdtemp(dir = self.destination_dir )
-            temp_dir = os.path.join(destination_path,'temp')
+            # temp_dir = tempfile.mkdtemp(dir = self.destination_dir )
+            temp_dir = os.path.join(destination_path, 'temp')
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
             os.makedirs(temp_dir)
             os.chdir(temp_dir)
         except Exception as e:
-            logging.error('Failed to create the temp_dir: {}, error{}' \
+            logging.error('Failed to create the temp_dir: {}, error{}'
                           .format(temp_dir, e))
             return False
         return temp_dir
-    
-    # Clean old files in the destination dir; Temp folder CANNOT be removed 
+
+    # Clean old files in the destination dir; Temp folder CANNOT be removed
     def clean_destination_dir(self, destination_path):
+        """Remove old files in destination directory"""
         try:
             os.chdir(destination_path)
             for f in os.listdir('.'):
@@ -201,10 +211,19 @@ class BaseRefData():
             error{}'.format(e))
             return False
         return True
-    
-    # Check the gap between two dates; used by restore method to select 
+
+    # Check the gap between two dates; used by restore method to select
     # the right version of the database
     def count_gap_two_dates(self, target_date, date):
+        """Check the gap between two dates
+
+        Used by restore method to select the right version of the database
+        Args:
+            target_date (string): a date in format yyyy-mm-dd
+            date (string): a date in format yyyy-mm-dd
+        Return:
+            number of days between two dates
+        """
         try:
             target_items = target_date.split('-')
             date_items = date.split('-')
@@ -216,32 +235,47 @@ class BaseRefData():
             error{}'.format(e))
             return -1
         return (year*365+month*30+day)
-    
+
     # Check the path of destination of the restored database
     # if relative path, then cwd/proposed_destination
-    def check_restore_destination(self,proposed_destination):
+    def check_restore_destination(self, proposed_destination):
+        """Return the absolute path of restore destination"""
         if os.path.isabs(proposed_destination):
             return proposed_destination
         else:
-            #return os.path.join(str(Path.home()),proposed_destination)
-            return os.path.join(self.current_dir,proposed_destination)
-    
-    # The format of the restore date has to be yyyy-mm-dd        
-    def check_restore_date_format(self,proposed_date):
+            # return os.path.join(str(Path.home()), proposed_destination)
+            return os.path.join(self.current_dir, proposed_destination)
+
+    # The format of the restore date has to be yyyy-mm-dd
+    def check_restore_date_format(self, proposed_date):
+        """Check the format of the restore date"""
         date_format = proposed_date.split('-')
-        if len(date_format) !=3 :
+        if len(date_format) != 3:
             return False
         for index in range(len(date_format)):
             if not date_format[index].isdigit():
                 return False
         return True
-    
+
     # Check the restore date and find the right date to be restored
     # the right date is the proposed_date if it exists in the backup folder;
-    # otherwise the right date is the one just before the proposed_date that 
+    # otherwise the right date is the one just before the proposed_date that
     # available in the backup folder
     def check_restore_date(self, backup_dir, proposed_date):
-        restore_path=''
+        """Return the right date to be restored
+
+        Check the restore date and find the right date to be restored
+        the right date is the proposed_date if it exists in the backup folder;
+        otherwise the right date is the one just before the proposed_date that
+        available in the backup folder
+        Args:
+            backup_dir (string): a path to a directory
+            proposed_date (string): date of database version to be restored
+        Return:
+            the date that available in backup_dir AND on or just before the
+            proposed_date
+        """
+        restore_path = ''
         try:
             right_format = self.check_restore_date_format(proposed_date)
             if not right_format:
@@ -249,9 +283,9 @@ class BaseRefData():
                 logging.error('Format of --restore-date has to be yyyy-mm-dd')
                 return False
             restore_date = ''
-            minGap = -1;
+            minGap = -1
             for f in os.listdir(backup_dir):
-                if os.path.isdir(os.path.join(backup_dir,f)) \
+                if os.path.isdir(os.path.join(backup_dir, f)) \
                         and self.check_restore_date_format(f):
                     gap = self.count_gap_two_dates(proposed_date, f)
                     if gap >= 0 and minGap == -1:
@@ -261,21 +295,20 @@ class BaseRefData():
                         minGap = gap
                         restore_date = f
             if restore_date:
-                restore_path = os.path.join(backup_dir, restore_date) 
+                restore_path = os.path.join(backup_dir, restore_date)
             if not os.path.exists(restore_path):
                 logging.error('could not restore, database created on/before \
                 \nthe provided date does not exist.')
                 return False
-            if len(os.listdir(restore_path) ) == 0:
-                logging.error('could not restore, {} is an empty folder.' \
+            if len(os.listdir(restore_path)) == 0:
+                logging.error('could not restore, {} is an empty folder.'
                               .format(restore_path))
-                return False   
+                return False
         except Exception as e:
             logging.error('Failed to check restore folder, error{}'.format(e))
             return False
         logging.info('Required --restore-date {}; Real --restore-date {}.'
                      .format(proposed_date, restore_date))
-        print('Required --restore-date ' + proposed_date +'; \
-              \nReal --restore-date '+ restore_date)
+        print('Required --restore-date ' + proposed_date + ';\
+              \nReal --restore-date ' + restore_date)
         return restore_path
-    

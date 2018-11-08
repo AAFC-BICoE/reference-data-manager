@@ -73,9 +73,7 @@ ncbi:
         ext_sequence: ".fasta"
         ext_taxonomy: ".taxon"
         ### The accession IDs are downloaded in batches. Define the batch_size here
-        batch_size: 6000
-        ### Required for formating sequence files. line_width is the number of bases in each line
-        line_width: 80
+        batch_size: 4000
         ### The list of subset names, and the query to get each subset
         query_set:
             - "CO1p | COI and Phyllocnistis citrella"

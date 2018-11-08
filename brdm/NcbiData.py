@@ -4,10 +4,11 @@ import requests
 from brdm.BaseRefData import BaseRefData
 from brdm.RefDataInterface import RefDataInterface
 
+
 class NcbiData(BaseRefData, RefDataInterface):
 
-
     def __init__(self, config_file):
+        """Initialize the object"""
         super(NcbiData, self).__init__(config_file)
         self.login_url = self.config['ncbi']['login_url']
         self.ncbi_user = self.config['ncbi']['user']
@@ -15,15 +16,16 @@ class NcbiData(BaseRefData, RefDataInterface):
         self.chunk_size = self.config['ncbi']['chunk_size']
         try:
             self.destination_dir = os.path.join(
-                                    super(NcbiData, self).destination_dir, 
+                                    super(NcbiData, self).destination_dir,
                                     self.config['ncbi']['destination_folder'])
             if not os.path.exists(self.destination_dir):
-                os.makedirs(self.destination_dir, mode = self.folder_mode)
+                os.makedirs(self.destination_dir, mode=self.folder_mode)
             os.chdir(self.destination_dir)
-            self.backup_dir = os.path.join(super(NcbiData, self).backup_dir, 
+            self.backup_dir = os.path.join(
+                                    super(NcbiData, self).backup_dir,
                                     self.config['ncbi']['destination_folder'])
             if not os.path.exists(self.backup_dir):
-                os.makedirs(self.backup_dir, mode = self.folder_mode)
+                os.makedirs(self.backup_dir, mode=self.folder_mode)
         except Exception as e:
             logging.error('Failed to create the destination or backup_dir \
             \nwith error {}'.format(e))
@@ -56,12 +58,13 @@ class NcbiData(BaseRefData, RefDataInterface):
         logging.info('Backing up all of NCBI data ... Nothing to do.')
         pass
 
-    def restore(self,folder_name):
+    def restore(self, folder_name):
         logging.info('Restoringing all of NCBI data ... Nothing to do.')
         pass
 
     # Login to NCBI
     def https_connect(self):
+        """Login to NCBI"""
         logging.info('Connecting to NCBI https: {}'.format(self.login_url))
         login_data = {
                 'username': self.ncbi_user,
@@ -80,16 +83,25 @@ class NcbiData(BaseRefData, RefDataInterface):
                 time.sleep(self.sleep_time)
                 retry_num -= 1
         return session_requests, connected
-    
-    # Download a file 
+
+    # Download a file
     def download_a_file(self, file_name, file_address, session_requests):
+        """Download a file by requests
+
+        Args:
+            file_name (string): the name of the file downloaded
+            file_address (string): the link to the file needed to be download
+            session_requests (object): requests session
+        Return:
+            True if the file is downloaded successfully; otherwise False
+        """
         chunkSize = self.chunk_size
         totalSize = 0
-        try:    
+        try:
             res = session_requests.get(file_address, stream=True)
             with open(file_name, 'wb') as output:
                 chunknumber = 0
-                for chunk in res.iter_content(chunk_size=chunkSize, \
+                for chunk in res.iter_content(chunk_size=chunkSize,
                                               decode_unicode=False):
                     if chunk:
                         totalSize = totalSize + chunkSize
@@ -97,7 +109,7 @@ class NcbiData(BaseRefData, RefDataInterface):
                         output.write(chunk)
             os.chmod(file_name, self.file_mode)
         except Exception as e:
-            logging.exception('Failed to download file {}.{}' \
-                              .format(file_name,e))
+            logging.exception('Failed to download file {}.{}'
+                              .format(file_name, e))
             return False
         return True
