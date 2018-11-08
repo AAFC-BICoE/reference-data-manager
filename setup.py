@@ -8,7 +8,7 @@ if os.path.exists(readme_file):
         readme = f.read()
 
 license_file = 'LICENSE'
-license ='Cannot find the file:'+license_file
+license = 'Cannot find the file:'+license_file
 if os.path.exists(license_file):
     with open(license_file) as f:
         license = f.read()
@@ -24,42 +24,41 @@ setup(
     name="reference-data-manager",
     version="0.3.6",
 
-    description='''Bioinformatics Reference Data Manager is an application used to download, backup and update of \
-    reference data, required for various bioinformatics analysis''',
-    
+    description='''Bioinformatics Reference Data Manager is an application
+    used to download, backup and update of reference data, required for
+    various bioinformatics analysis''',
+
     long_description=readme,
-    
+
     author='Oksana Korol, Chunfang Zheng',
     author_email='aafc.bice-ceib.aac@canada.ca',
 
     url='https://github.com/AAFC-BICoE/reference-data-manager',
-    
+
     license=license,
-    
+
     classifiers=(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
     ),
 
-    #packages=find_packages(exclude=['test*', 'Test*']),
-    packages=find_packages(),
-    
+    packages=find_packages(exclude=['test*', 'Test*']),
+
     package_data={
         '': ['README.md', 'LICENSE'],
         'brdm': ['config.yaml.sample']
       },
 
     include_package_data=True,
-    
-    #install_requires = requires,
-    
-    scripts=['main.py','rdm_env_setting.yaml'],
+
+    # install_requires = requires,
+
+    scripts=['main.py', 'rdm_env_setting.yaml'],
 
     entry_points={
           'console_scripts': [
               'brdm = main:main',
           ],
       },
-
 
 )

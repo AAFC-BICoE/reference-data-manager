@@ -3,13 +3,14 @@ import os
 from time import gmtime, strftime
 from brdm.NcbiTaxonomyData import NcbiTaxonomyData
 
-class TestNcbiTaxonomyData(unittest.TestCase):
 
+class TestNcbiTaxonomyData(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        self.fixture = NcbiTaxonomyData('{}/test_config.yaml'.format(dir_path))
-    
+        self.fixture = NcbiTaxonomyData('{}/test_config.yaml'
+                                        .format(dir_path))
+
     '''
     @classmethod
     def tearDownClass(self):
@@ -21,58 +22,43 @@ class TestNcbiTaxonomyData(unittest.TestCase):
 
         pass
     '''
-        
-    def test_1_getConfig(self):
-        print('Check config file...')
-        self.assertEqual(self.fixture.login_url, "https://ftp.ncbi.nlm.nih.gov", "Wrong login_url" )
-        self.assertEqual(self.fixture.download_file, 
-                         "new_taxdump.tar.gz", 
-                         "Wrong download_file address" )
-    
-      
-    def test_2_update(self):
-        print('Update ncbi taxonomy...')
-        success = self.fixture.update()
-        self.assertTrue(success, "NCBI update did not return True.")
-        
-        
-    def test_3_readme(self):
-        print('Check readme files...')
-        ncbi_readme = os.path.join(self.fixture.destination_dir, self.fixture.info_file_name)
-        self.assertTrue(os.path.isfile(ncbi_readme), "NCBI taxonomy README file is not found in the download directory.")
-        readme_file = os.path.join(self.fixture.destination_dir, "README+")
-        self.assertTrue(os.path.isfile(readme_file), "RDM's's README+ file is not found in the download directory.")
-    
-    
-    def test_4_restore(self):
-        print('Restore ncbi taxonomy...')
-        success = self.fixture.restore(strftime("%Y-%m-%d", gmtime()), \
-                                       os.path.join(self.fixture.destination_dir,"restoreTaxonomy"))
-        self.assertTrue(success, "NCBI update did not return True.")
-        
-    
-    '''
-    def test_https_connect(self):
+
+    def test_1_https_connect(self):
+        print('Check https connection...')
         session_requests, status = self.fixture.https_connect()
         session_requests.close()
-        self.assertTrue(status, "connection OK")
-       
-    def test_download(self):
+        self.assertTrue(status, 'connection Failed')
+
+    def test_2_download(self):
+        print('Check method download...')
         success = self.fixture.download(test=True)
-        self.assertTrue(success, "NCBI taxonomy download a file(readMe file).")
-    
-        
-    def test_format_taxonomy(self):
-        os.chdir("/home/chz001/myspace/reference-data-manager/output/ncbi/taxonomy/")
-        success = self.fixture.format_taxonomy(self.fixture._taxonomy_file)
-        self.assertTrue(success, "NCBI taxonomy format.")  
-        
-    def test_backup(self):
-        self.fixture.download()
-        backup = self.fixture.backup()
-        self.assertTrue(backup, "backup OK")
-    '''
-   
+        self.assertTrue(success, 'Failed in NCBI taxonomy download.')
+
+    def test_3_update(self):
+        print('Update ncbi taxonomy...')
+        success = self.fixture.update()
+        self.assertTrue(success, 'Failed in NCBI update.')
+
+    def test_4_readme(self):
+        print('Check readme files...')
+        ncbi_readme = os.path.join(self.fixture.destination_dir,
+                                   self.fixture.info_file_name)
+        self.assertTrue(os.path.isfile(ncbi_readme),
+                        'Cannot find NCBI taxonomy README file.')
+        readme_file = os.path.join(self.fixture.destination_dir,
+                                   self.fixture.config['readme_file'])
+        self.assertTrue(os.path.isfile(readme_file),
+                        'Cannot find RDM README+ file.')
+
+    def test_5_restore(self):
+        print('Restore ncbi taxonomy...')
+        success = self.fixture.restore(strftime('%Y-%m-%d', gmtime()),
+                                       os.path.join(
+                                            self.fixture.destination_dir,
+                                            'restoreTaxonomy')
+                                       )
+        self.assertTrue(success, 'Failed in NCBI taxonomy restore.')
+
+
 if __name__ == '__main__':
-    unittest.main() 
-    
+    unittest.main()
