@@ -189,7 +189,7 @@ class NcbiSubsetData(NcbiData, RefDataInterface):
         attempt = 0
         for start in range(0, count, batch_size):
             all_start.append(start)
-        while attempt < max_download_attemps and len(all_start) > 0:
+        while attempt < max_download_attempts and len(all_start) > 0:
             print('all start')
             print(all_start)
             new_start = []
