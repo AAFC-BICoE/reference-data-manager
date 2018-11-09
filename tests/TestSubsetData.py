@@ -32,7 +32,7 @@ class TestNcbiSebsetData(unittest.TestCase):
         subset_file_name = self.fixture.query[0].split('|')[0].strip()
         subset_query = self.fixture.query[0].split('|')[1].strip()
         success = self.fixture.download_a_subset(
-                                    subset_file_name, subset_query)          
+                                    subset_file_name, subset_query)
         self.assertTrue(success, 'Failed in download.')
 
     def test_3_accID_to_info(self):
@@ -60,8 +60,7 @@ class TestNcbiSebsetData(unittest.TestCase):
                                             'restoreSubsets')
                                        )
         self.assertTrue(success, 'NCBI restore did not return True.')
-    
+
 
 if __name__ == '__main__':
     unittest.main()
-    
