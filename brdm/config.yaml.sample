@@ -2,9 +2,9 @@
 ###           Configuration file for               ###
 ### Bioinformatics Reference Data Manager (BRDM)   ###
 ######################################################
-# Copy this file to config.yaml and modify your config.yaml
+### Copy this file to config.yaml and modify your config.yaml
 
-# Path to the topmost folder of the database/backup 
+### Path to the topmost folder of the database/backup 
 root_folder: "/path/to/database/root/folder/"
 backup_folder: "/path/to/database/backup/folder/"
 
@@ -18,7 +18,8 @@ download_retry_num: 3
 connection_retry_num: 3
 sleep_time: 2
 
-### Folder mode and file mode for the reference database
+### Folder and file permissions for the reference database
+### Permissions are in the form of octal format for python3
 folder_mode: 0o750
 file_mode: 0o640
 
@@ -30,7 +31,7 @@ file_mode: 0o640
 ### All the destination_folders below are the folders to store the data
 ### The path of the destination folder follows the inheritance rule:
 ### e.g. the path of the taxonomy destination_folder below 
-### will be /path/to/topmost/folder/ncbi/taxonomy/
+### will be /path/to/topmost/folder/<ncbi_destination_folder>/<taxonomy_destination_folder>/
 
 ncbi:
     destination_folder: "ncbi/"
@@ -47,7 +48,7 @@ ncbi:
         download_folder: "blast/db/"
         ### readme file provided by NCBI. Description of the NCBI nrnt blast database
         info_file_name: "README"
-        
+ 
     taxonomy:       
         destination_folder: "taxonomy/"
         ### The folder in NCBI website which contains taxonomy information
@@ -56,7 +57,8 @@ ncbi:
         info_file_name: "taxdump_readme.txt"
         ### The name of the tarfile which will be downloaded from NCBI download_folder 
         download_file: "new_taxdump.tar.gz"
-        ### The specific file in downloaded tarball which contains information we need
+        ### The specific file in downloaded tarball which contains the taxonomic ID and
+        ### associated ranked lineage
         taxonomy_file: "rankedlineage"
     
     subsets:
@@ -65,7 +67,8 @@ ncbi:
         entrez_email: "your_email_address"
         ### Only accession IDs for each subsets are downloaded from NCBI
         ### To retrieve the sequence and taxonomy for an accession ID, 
-        ### the paths to local ncbi/nt and ncbi/taxonomy are required
+        ### the paths to local ncbi nt blast database and 
+        ### ncbi ranked lineage taxonomy file are required
         taxonomy_file: "/path/to/ncbi/taxonomy/rankedlineage.txt"
         nt_file: "/path/to/ncbi/blast_db/nt"
         ### Extensions for accession ID file, sequence file and taxonomy file
@@ -73,13 +76,15 @@ ncbi:
         ext_sequence: ".fasta"
         ext_taxonomy: ".taxon"
         ### The accession IDs are downloaded in batches. Define the batch_size here
+        ### Warning: Abuse of the entrez or NCBI services can lead to temporary
+        ### loss of access. It is suggested to make queries to entrez outside of business hours
         batch_size: 4000
         ### The list of subset names, and the query to get each subset
         query_set:
             - "CO1p | COI and Phyllocnistis citrella"
             - "ITSD | Internal Transcribed Spacer[All Fields] and Diplodia seriata"
-            
-    whole_genome:       
+   
+    whole_genome:     
         destination_folder: "wholeGenome/"
         ### The folder in NCBI website which contains genome sequences
         download_folder: "genomes/refseq/"
@@ -88,12 +93,12 @@ ncbi:
         ### The summary file which contains the links to all the genome sequences
         download_file: "assembly_summary.txt"
         ### The available assembly_level options: Contig, Scaffold, Chromosome, Complete Genome.
-        ### Only one option can be selected (Can be modified for multiple options)
+        ### Only one option can be selected
         assembly_level: "Complete Genome"
-        ### The details of the available options can be found in the downloaded README.txt.
-        ### List of options: archaea,bacteria,fungi,invertebrate,metagenomes(genbank)
-        ### other(genbank),plant,protozoa,vertebrate_mammalian,vertebrate_other,viral, 
-        ### mitochondrion(refseq),plasmid(refseq),plastid(refseq)
+        ### The details of the available taxa can be found in the downloaded README.txt from NCBI.
+        ### List of options: archaea, bacteria, fungi, invertebrate, metagenomes(genbank),
+        ### other(genbank), plant, protozoa, vertebrate_mammalian, vertebrate_other, viral, 
+        ### mitochondrion(refseq), plasmid(refseq), plastid(refseq)
         species:
             - bacteria
             - viral
@@ -111,6 +116,12 @@ greengene:
     download_file:
         - "gg_13_5.fasta.gz"
         - "gg_13_5_taxonomy.txt.gz"
+        - "gg_13_5_otus.tar.gz"
+    format_file:
+        - "gg_13_5.fasta | gg_13_5_taxonomy.txt | gg_13_5"
+        - "gg_13_5_otus/rep_set/97_otus.fasta | gg_13_5_otus/taxonomy/97_otu_taxonomy.txt | gg_13_5_97_otu"
+        - "gg_13_5_otus/rep_set/99_otus.fasta | gg_13_5_otus/taxonomy/99_otu_taxonomy.txt | gg_13_5_99_otu"
+
     
     
 ######################################################
