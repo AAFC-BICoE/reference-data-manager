@@ -93,10 +93,6 @@ def parse_input_args(argv):
                         help='Update GreenGene data',
                         dest='greengene_update', action='store_true',
                         required=False)
-    parser.add_argument('--format-greengene',
-                        help='Format GreenGene data',
-                        dest='greengene_format', action='store_true',
-                        required=False)
     # Unite data
     parser.add_argument('--update-unitedata', help='Update unite data',
                         dest='unitedata_update', action='store_true',
@@ -122,8 +118,6 @@ def parse_input_args(argv):
         actions.append('--restore-ncbi-wholegenomes')
     if args.greengene_update:
         actions.append('--update-greengene')
-    if args.greengene_format:
-        actions.append('--restore-greengene')
     if len(actions) == 0:
         parser.error('No action requested. Please add one of the required \
                      \nactions (e.g. --update-ncbi-subsets)')
@@ -248,14 +242,6 @@ def execute_script(input_args):
         if success:
             print('GreenGene data were updated successfully.'
                   'nIt is located at: {}'.format(greengene.destination_dir))
-
-    if parsed_args.greengene_format:
-        print('Running greengene format')
-        greengene = GreenGeneData(config_file)
-        success = greengene.format()
-        if success:
-            print('GreenGene data were format successfully.'
-                  '\nIt is located at: {}'.format(greengene.destination_dir))
 
     '''
     if parsed_args.unitedata_update:
