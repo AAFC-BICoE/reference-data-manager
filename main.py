@@ -6,7 +6,8 @@ from brdm.NcbiSubsetData import NcbiSubsetData
 from brdm.NcbiTaxonomyData import NcbiTaxonomyData
 from brdm.NcbiWholeGenome import NcbiWholeGenome
 from brdm.GreenGeneData import GreenGeneData
-# from brdm.UniteData import UniteData
+from brdm.UniteData import UniteData
+from brdm.SilvaData import SilvaData
 
 
 def parse_input_args(argv):
@@ -94,8 +95,12 @@ def parse_input_args(argv):
                         dest='greengene_update', action='store_true',
                         required=False)
     # Unite data
-    parser.add_argument('--update-unitedata', help='Update unite data',
-                        dest='unitedata_update', action='store_true',
+    parser.add_argument('--update-unite-data', help='Update unite data',
+                        dest='unite_data_update', action='store_true',
+                        required=False)
+    # Silva data
+    parser.add_argument('--update-silva-data', help='Update silva data',
+                        dest='silva_data_update', action='store_true',
                         required=False)
     args = parser.parse_args(argv)
     # Count number of actions
@@ -118,6 +123,10 @@ def parse_input_args(argv):
         actions.append('--restore-ncbi-wholegenomes')
     if args.greengene_update:
         actions.append('--update-greengene')
+    if args.unite_data_update:
+        actions.append('--update-unite-data')
+    if args.silva_data_update:
+        actions.append('--update-silva_data')
     if len(actions) == 0:
         parser.error('No action requested. Please add one of the required \
                      \nactions (e.g. --update-ncbi-subsets)')
@@ -241,19 +250,27 @@ def execute_script(input_args):
         success = greengene.update()
         if success:
             print('GreenGene data were updated successfully.'
-                  'nIt is located at: {}'.format(greengene.destination_dir))
+                  '\nIt is located at: {}'.format(greengene.destination_dir))
 
-    '''
-    if parsed_args.unitedata_update:
+    if parsed_args.unite_data_update:
         print('Running unite update')
         unitedata = UniteData(config_file)
         success = unitedata.update()
         if success:
-            print('unite data were updated successfully. \
-            It is located at: {}'.format(
-                unitedata.destination_dir
-            ))
-    '''
+            print('unite data were updated successfully.'
+                  '\nIt is located at: {}'.format(
+                                    unitedata.destination_dir)
+                  )
+
+    if parsed_args.silva_data_update:
+        print('Running silva data update')
+        silvadata = SilvaData(config_file)
+        success = silvadata.update()
+        if success:
+            print('Silva data were updated successfully.'
+                  '\nIt is located at: {}'.format(
+                                    silvadata.destination_dir)
+                  )
 
 
 def main():

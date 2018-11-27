@@ -63,6 +63,10 @@ class GreenGeneData(BaseRefData, RefDataInterface):
         except Exception as e:
             logging.error('Failed to move files to destination:{}'.format(e))
             return False
+        format_ok = self.format()
+        if not format_ok:
+            logging.error('Failed to format data')
+            return False
         return True
 
     def download(self, test=False):
@@ -89,7 +93,8 @@ class GreenGeneData(BaseRefData, RefDataInterface):
             logging.info('Failed to download readme after {} attempts.'
                          .format(attempt))
             return False
-
+        if test:
+            return True
         for a_file in self.download_file:
             attempt = 0
             completed = False
@@ -303,7 +308,7 @@ class GreenGeneData(BaseRefData, RefDataInterface):
     def to_blast_format(self, sequence_file, output_file):
         """Format the data for blast tool"""
         try:
-            blast_folder = os.path.join(a_subset_folder, 'Blast')
+            blast_folder = os.path.join(self.destination_dir, 'Blast')
             if os.path.exists(blast_folder):
                 shutil.rmtree(blast_folder)
             os.makedirs(blast_folder, mode=self.folder_mode)
