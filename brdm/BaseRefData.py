@@ -110,7 +110,7 @@ class BaseRefData():
         """Method to delete a file"""
         try:
             os.remove(full_file_name)
-            logging.info('File deleted: {}'.format(full_file_name))
+            #logging.info('File deleted: {}'.format(full_file_name))
         except Exception as e:
             logging.exception('Failed to delete a file {}. Error: {}'
                               .format(full_file_name, e))
@@ -168,7 +168,7 @@ class BaseRefData():
     def create_backup_dir(self):
         """Create backup directory"""
         short_dir_name = datetime.datetime.now().strftime('%Y-%m-%d')
-        full_dir_name = '{}{}'.format(self.backup_dir, short_dir_name)
+        full_dir_name = os.path.join(self.backup_dir, short_dir_name)
         try:
             if os.path.exists(full_dir_name):
                 shutil.rmtree(full_dir_name)
