@@ -81,6 +81,9 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
             logging.error('Failed to move files to destination folder: {}'
                           .format(e))
             return False
+        format_ok = self.format()
+        if not format_ok:
+            return False
         return True
 
     # Download taxonomy database
@@ -151,19 +154,23 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
                 return False
             if download_file_number == 0:
                 download_file_number = len(file_list)
+
             downloaded = 0
             file_list_downloaded = []
+            file_list_failed = []
             completed = False
             while attempt < max_download_attempts and not completed:
                 attempt += 1
                 try:
                     session_requests, connected = self.https_connect()
+                    logging.info('total file number in set {} is {}'
+                                 .format(a_set, len(file_list)))
                     for a_file in file_list:
                         if a_file not in file_list_downloaded:
                             # download a genome zipped file
                             file_name = a_file.split('/')[-1]
                             file_url = a_file.replace('ftp://', 'https://')
-                            a_file = self.download_a_file(
+                            seq_file = self.download_a_file(
                                         file_name, file_url, session_requests)
                             md5_name = self.config['ncbi']['whole_genome'
                                                            ]['md5_file_name']
@@ -343,7 +350,7 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
                         if not os.path.isdir(path_to_subdir):
                             os.makedirs(path_to_subdir, mode=self.folder_mode)
                         os.chdir(path_to_subdir)
-                        a_file = self.download_a_file(
+                        seq_file = self.download_a_file(
                                     file_name, file_url, session_requests)
                         md5_name = self.config['ncbi']['whole_genome'
                                                        ]['md5_file_name']
@@ -379,6 +386,31 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
 
         return True
 
-    '''
     def format(self):
-    '''
+        for a_set in self.species:
+            try:
+                folder_name = os.path.join(self.destination_dir, a_set)
+                if os.path.exists(folder_name):
+                    os.chdir(folder_name)
+                else:
+                    logging.error('Failed to format data: {} not exists'
+                                  .format(a_set))
+                    return False
+                blast_folder = os.path.join(folder_name, 'Blast')
+                if os.path.exists(blast_folder):
+                    shutil.rmtree(blast_folder)
+                os.makedirs(blast_folder, mode=self.folder_mode)
+                command1 = 'cat *.fna > Blast/all_sequence.fasta'
+                os.system(command1)
+                os.chdir(blast_folder)
+                command2 = 'makeblastdb -in all_sequence.fasta'\
+                    + ' -dbtype nucl -out ' + a_set + '_blastdb'
+                os.system(command2)
+                os.system('rm all_sequence.fasta')
+                for f in os.listdir('.'):
+                    if os.path.isfile(f):
+                        os.chmod(f, self.file_mode)
+            except Exception as e:
+                logging.error('failed to get blast format: {}'.format(e))
+                return False
+        return True
