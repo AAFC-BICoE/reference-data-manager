@@ -122,7 +122,41 @@ greengene:
         - "gg_13_5_otus/rep_set/97_otus.fasta | gg_13_5_otus/taxonomy/97_otu_taxonomy.txt | gg_13_5_97_otu"
         - "gg_13_5_otus/rep_set/99_otus.fasta | gg_13_5_otus/taxonomy/99_otu_taxonomy.txt | gg_13_5_99_otu"
 
-    
+unite:
+    destination_folder: "unite"
+    ### The link of the site for downloading unite files
+    download_url: "https://unite.ut.ee/sh_files/"
+    ### The are many files in the download_url; specify the file names that need to be downloaded
+    download_file:
+        - "| UNITE_public_10.10.2017.fasta.zip"
+        - "Qiime1 | sh_qiime_release_10.10.2017.zip"
+        - "Mothur | sh_mothur_release_10.10.2017.zip"
+    ### Extra files/folders (intermediate data for developers?) to be remove
+    developer_folder:
+        - "developer"
+        - "Qiime1/developer"
+    ### Clean the extra layer of the folder in the path.(e.g. change the path ../Mothur/data to ../Mothur)
+    redundant_path:
+        - "Mothur/data"
+        
+silva:
+    destination_folder: "silva"
+    ### The link of the site for downloading silva files
+    download_url: "https://www.arb-silva.de/fileadmin/silva_databases/release_132/Exports/"
+    ### Readme file provided by Silva; contains useful information related to Silva release 132
+    info_file_name: "README.txt"
+    ### The are many files in the download_url; specify the file names that need to be downloaded
+    download_file: 
+        - "SILVA_132_SSURef_tax_silva.fasta.gz"
+        - "SILVA_132_SSURef_tax_silva_trunc.fasta.gz"
+    ### Silva data formated for Qiime1 is provided Qiime team; Qiime1 links are listed below:   
+    Qiime1_file:
+        - "https://www.arb-silva.de/fileadmin/silva_databases/qiime/Silva_132_release.zip"
+    format_file:
+        - "SILVA_132_QIIME_release/rep_set/rep_set_all/99/silva132_99.fna | SILVA_132_QIIME_release/taxonomy/taxonomy_all/99/taxonomy_7_levels.txt | silva_132_99_all.otu"
+        - "SILVA_132_QIIME_release/rep_set/rep_set_all/97/silva132_97.fna | SILVA_132_QIIME_release/taxonomy/taxonomy_all/97/taxonomy_7_levels.txt | silva_132_97_all.otu"
+    redundant_folder: 
+        - "__MACOSX"    
     
 ######################################################
 ###                 Logging                        ###
