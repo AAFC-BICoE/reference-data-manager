@@ -9,6 +9,7 @@ import zipfile
 from pathlib import Path
 from hashlib import md5
 from datetime import timedelta
+from site import abs_paths
 
 
 class BaseRefData():
@@ -240,12 +241,17 @@ class BaseRefData():
     # if relative path, then cwd/proposed_destination
     def check_restore_destination(self, proposed_destination):
         """Return the absolute path of restore destination"""
-        if os.path.isabs(proposed_destination):
-            return proposed_destination
-        else:
+        abs_path = proposed_destination
+        if not os.path.isabs(proposed_destination):
+            abs_path = os.path.join(self.current_dir, proposed_destination)
             # return os.path.join(str(Path.home()), proposed_destination)
-            return os.path.join(self.current_dir, proposed_destination)
-
+        if os.path.isdir(abs_path):
+            print('Folder already exists; Select other restore destination')
+            logging.error('{} already exists; Select other restore destination'
+                          .format(abs_path))
+            return False
+        return abs_path
+    
     # The format of the restore date has to be yyyy-mm-dd
     def check_restore_date_format(self, proposed_date):
         """Check the format of the restore date"""

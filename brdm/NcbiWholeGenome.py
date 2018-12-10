@@ -81,7 +81,7 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
             logging.error('Failed to move files to destination folder: {}'
                           .format(e))
             return False
-        format_ok = self.format()
+        format_ok = self.format(self.destination_dir)
         if not format_ok:
             return False
         return True
@@ -323,6 +323,9 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
                                     required_files, restore_destination)
             if not restore_download_ok:
                 return False
+            format_ok = self.format(restore_destination)
+            if not format_ok:
+                return False
         except Exception as e:
             logging.exception('Failed to restore NCBI wholegenome: {}'
                               .format(e))
@@ -386,10 +389,10 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
 
         return True
 
-    def format(self):
+    def format(self, dest_folder):
         for a_set in self.species:
             try:
-                folder_name = os.path.join(self.destination_dir, a_set)
+                folder_name = os.path.join(dest_folder, a_set)
                 if os.path.exists(folder_name):
                     os.chdir(folder_name)
                 else:
