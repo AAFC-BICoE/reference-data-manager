@@ -22,7 +22,7 @@ if os.path.exists(requires_file):
 
 setup(
     name="reference-data-manager",
-    version="0.3.6",
+    version="0.6",
 
     description='''Bioinformatics Reference Data Manager is an application
     used to download, backup and update of reference data, required for
@@ -30,7 +30,7 @@ setup(
 
     long_description=readme,
 
-    author='Oksana Korol, Chunfang Zheng',
+    author='Chunfang Zheng, Oksana Korol',
     author_email='aafc.bice-ceib.aac@canada.ca',
 
     url='https://github.com/AAFC-BICoE/reference-data-manager',

@@ -1,3 +1,4 @@
+name: rdm_env_git
 channels:
   - conda-forge
   - bioconda
@@ -25,7 +26,6 @@ dependencies:
   - asn1crypto=0.24.0=py36_1003
   - beautifulsoup4=4.6.3=py36_1000
   - biopython=1.72=py36_0
-  - blas=1.0=mkl
   - boost=1.67.0=py36h3e44d54_0
   - boost-cpp=1.67.0=h3a22d5f_0
   - bzip2=1.0.6=h470a237_2
@@ -52,6 +52,7 @@ dependencies:
   - pcre=8.41=hfc679d8_3
   - perl=5.26.2=h470a237_0
   - pip=18.1=py36_1000
+  - pkginfo=1.4.2=py_1
   - pycparser=2.19=py_0
   - pyopenssl=18.0.0=py36_1000
   - pysocks=1.6.8=py36_1002
@@ -60,22 +61,23 @@ dependencies:
   - readline=7.0=haf1bffa_1
   - requests=2.20.0=py36_1000
   - requests-ftp=0.3.1=py36_0
+  - requests-toolbelt=0.8.0=py_1
   - setuptools=40.5.0=py36_0
   - six=1.11.0=py36_1001
   - sqlite=3.25.2=hb1c47c0_0
   - tk=8.6.8=ha92aebf_0
+  - tqdm=4.28.1=py_0
+  - twine=1.11.0=py_1
   - urllib3=1.23=py36_1001
   - wheel=0.32.2=py36_0
   - xz=5.2.4=h470a237_1
   - yaml=0.1.7=h470a237_1
   - zlib=1.2.11=h470a237_3
+  - blas=1.0=mkl
   - intel-openmp=2019.0=118
-  - mkl=2019.0=118
-  - numpy=1.15.0=py36h1b885b7_0
-  - numpy-base=1.15.0=py36h3dfced4_0
+  - mkl=2018.0.3=1
+  - numpy=1.14.2=py36hdbf6ddf_0
+  - numpy-base=1.15.0=py36h1793315_0
   - pip:
-    - htseq==0.6.1
-    - matplotlib==1.5.1
-    - pysam==0.8.4rc0
-    - reference-data-manager
-    - ruffus==2.6.3
+    - reference-data-manager==0.3.6
+prefix: /home/chz001/myspace/miniconda2/envs/rdm_env_git
