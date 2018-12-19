@@ -25,6 +25,7 @@ dependencies:
   - asn1crypto=0.24.0=py36_1003
   - beautifulsoup4=4.6.3=py36_1000
   - biopython=1.72=py36_0
+  - blas=1.0=mkl
   - boost=1.67.0=py36h3e44d54_0
   - boost-cpp=1.67.0=h3a22d5f_0
   - bzip2=1.0.6=h470a237_2
@@ -68,8 +69,13 @@ dependencies:
   - xz=5.2.4=h470a237_1
   - yaml=0.1.7=h470a237_1
   - zlib=1.2.11=h470a237_3
-  - blas=1.0=mkl
   - intel-openmp=2019.0=118
   - mkl=2019.0=118
   - numpy=1.15.0=py36h1b885b7_0
   - numpy-base=1.15.0=py36h3dfced4_0
+  - pip:
+    - htseq==0.6.1
+    - matplotlib==1.5.1
+    - pysam==0.8.4rc0
+    - reference-data-manager
+    - ruffus==2.6.3
