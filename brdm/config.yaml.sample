@@ -92,6 +92,8 @@ ncbi:
         info_file_name: "README.txt"
         ### The summary file which contains the links to all the genome sequences
         download_file: "assembly_summary.txt"
+        ### The file name in which contains md5 for checksum
+        md5_file_name: "md5checksums.txt"
         ### The available assembly_level options: Contig, Scaffold, Chromosome, Complete Genome.
         ### Only one option can be selected
         assembly_level: "Complete Genome"

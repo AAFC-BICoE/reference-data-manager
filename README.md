@@ -10,30 +10,39 @@ BRDM is an application used to automatically update, backup and restore the refe
 ## Deployment Procedures
 
 * Download rdm_env_setting.yaml from github
-  > wget https://raw.githubusercontent.com/AAFC-BICoE/reference-data-manager/dev/rdm_env_setting.yaml
-
+```
+  wget https://raw.githubusercontent.com/AAFC-BICoE/reference-data-manager/dev/rdm_env_setting.yaml
+```
 * Create the conda environment for the program
-  > conda env create -n rdm_env --file rdm_env_setting.yaml 
-
+```
+  conda env create -n rdm_env --file rdm_env_setting.yaml 
+```
 ## Run the program
 
 * Set up the config file
   * The location of the sample configuration file config.yaml.sample
-  > /path/to/conda/envs/lib/python3.6/site-package/brdm
+  ```
+    /path/to/conda/envs/lib/python3.6/site-package/brdm
+  ```
   * Default option to set up the config file: Copy the sample configuration to config.yaml and modify config.yaml
-  > cd /path/to/conda/envs/lib/python3.6/site-package/brdm
-  > cp config.yaml.sample config.yaml
-  > nano config.yaml
+  ``` 
+    cd /path/to/conda/envs/lib/python3.6/site-package/brdm
+    cp config.yaml.sample config.yaml
+    nano config.yaml
+  ```
   * If the location or the name of your configuration file is different with that of default option, the path of your config file has to be provided by argument --config-file
 
 * view the options of the program
-  > source activate rdm_env
-  > brdm -h
-
+```
+  source activate rdm_env
+  brdm -h
+```
 * Run the program
-  > source activate rdm_env
-  > brdm [option]
+```
+  source activate rdm_env
+  brdm [option]
   (an example: brdm --update-ncbi-blast)
+```
 
 ## Some suggestions for executing the program
 
