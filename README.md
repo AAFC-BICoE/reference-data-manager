@@ -11,7 +11,7 @@ BRDM is an application used to automatically update, backup and restore the refe
 
 * Download rdm_env_setting.yaml from github
 ```
-  wget https://raw.githubusercontent.com/AAFC-BICoE/reference-data-manager/dev/rdm_env_setting.yaml
+  wget https://raw.githubusercontent.com/AAFC-BICoE/reference-data-manager/master/rdm_env_setting.yaml
 ```
 * Create the conda environment for the program
 ```
