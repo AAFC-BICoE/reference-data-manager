@@ -31,7 +31,7 @@ class TestNcbiWholeGenome(unittest.TestCase):
 
     def test_2_download(self):
         print('Check method download...')
-        success = self.fixture.download(download_file_number=1)
+        success = self.fixture.download(download_file_max=1)
         self.assertTrue(success, 'Failed in NCBI taxonomy download.')
 
     def test_3_update(self):

@@ -49,7 +49,7 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
             logging.error('Failed to create the temp_dir {}, error: {}'
                           .format(temp_dir, e))
             return False
-        success = self.download(download_file_number=file_number)
+        success = self.download(download_file_max=file_number)
         if not success:
             logging.error('Download failed. Update will not proceed.')
             return False
@@ -87,7 +87,7 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
         return True
 
     # Download taxonomy database
-    def download(self, download_file_number=3):
+    def download(self, download_file_max=3):
         """Download files"""
         logging.info('Executing NCBI whole genome download')
         download_start_time = time.time()
@@ -152,8 +152,9 @@ class NcbiWholeGenome(NcbiData, RefDataInterface):
             if len(file_list) == 0:
                 logging.error('Failed to get the file list to download')
                 return False
-            if download_file_number == 0:
-                download_file_number = len(file_list)
+            download_file_number = len(file_list)
+            if download_file_max > 0 and download_file_max < len(file_list):
+                download_file_number = download_file_max
 
             downloaded = 0
             file_list_downloaded = []
