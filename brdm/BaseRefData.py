@@ -143,7 +143,7 @@ class BaseRefData():
             os.chmod(file_name, self.file_mode)
         except Exception as e:
             logging.exception('Failed to write_readme. Error: {}'
-                              .format(filename, e))
+                              .format(file_name, e))
             return False
 
         logging.info('Finished writing an application README file: {}'
@@ -160,7 +160,7 @@ class BaseRefData():
                 md5_real = md5(file_data.read()).hexdigest()
         except Exception as e:
             logging.exception('Failed to check_md5. Error: {}'
-                              .format(filename, e))
+                              .format(file_name, e))
             return False
         return md5_check == md5_real
 
