@@ -193,6 +193,8 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                 for file in all_file:
                     if file not in downloaded_file:
                         download_success = False
+                        file_success = False
+                        md5_success = False
                         file_name_nrnt = file
                         file_url_nrnt = os.path.join(
                                             folder_url, file_name_nrnt)
@@ -200,10 +202,12 @@ class NcbiBlastData(NcbiData, RefDataInterface):
                         file_url_md5 = os.path.join(folder_url, file_name_md5)
                         file_success = self.download_a_file(
                             file_name_nrnt, file_url_nrnt, session_requests)
-                        md5_success = self.download_a_file(
-                            file_name_md5, file_url_md5, session_requests)
-                        download_success = self.checksum(file_name_md5,
-                                                         file_name_nrnt)
+                        if file_success:
+                            md5_success = self.download_a_file(
+                                file_name_md5, file_url_md5, session_requests)
+                        if md5_success:
+                            download_success = self.checksum(file_name_md5,
+                                                             file_name_nrnt)
                         if download_success:
                             downloaded_file.append(file)
                     if len(downloaded_file) == download_file_number:
