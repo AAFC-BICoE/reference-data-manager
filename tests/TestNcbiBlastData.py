@@ -1,6 +1,7 @@
 import unittest
 import os
 from brdm.NcbiBlastData import NcbiBlastData
+import re
 
 
 class TestNcbiBlastData(unittest.TestCase):
@@ -26,9 +27,16 @@ class TestNcbiBlastData(unittest.TestCase):
         print('Get ncbi nrnt blast file list...')
         folder_url = os.path.join(self.fixture.login_url,
                                   self.fixture.download_folder)
-        all_file = self.fixture.get_all_file(folder_url)
-        print('number of nrnt files :', len(all_file))
-        self.assertGreater(len(all_file), 100, 'Missing some nrnt files.')
+        all_files = self.fixture.get_all_file(folder_url)
+        print('number of nrnt files :', len(all_files))
+        self.assertGreater(len(all_files), 0, 'File list is empty')
+        file_match = []
+        for i in all_files:
+            nr_nt_re = re.match("[nr|nt]", i)
+            if nr_nt_re:
+                file_match.append(i)
+        print('number of file names matched:', len(file_match))
+        self.assertEqual(len(all_files), len(file_match), 'Missing some nrnt files')
 
     def test_2_update(self, files=2):
         print('Update ncbi nrnt blast...')
