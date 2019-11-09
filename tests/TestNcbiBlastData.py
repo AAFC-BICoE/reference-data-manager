@@ -72,9 +72,10 @@ class TestNcbiBlastData(unittest.TestCase):
             for directory_file in directory_list:
                 if directory_file in self.fixture.all_files:
                     download_file_size = os.path.getsize(directory_file)
-                    self.assertGreater(download_file_size, 0, 'Downloaded file is empty')
+                    self.assertGreater(download_file_size, 0,
+                                       'Downloaded file is empty')
         else:
-            print('Could not find any expected download files in destination folder')
+            print('Expected download files not found')
 
 
 if __name__ == '__main__':
