@@ -2,6 +2,7 @@ import unittest
 import os
 from brdm.NcbiBlastData import NcbiBlastData
 import re
+from datetime import datetime
 
 
 class TestNcbiBlastData(unittest.TestCase):
@@ -27,16 +28,15 @@ class TestNcbiBlastData(unittest.TestCase):
         print('Get ncbi nrnt blast file list...')
         folder_url = os.path.join(self.fixture.login_url,
                                   self.fixture.download_folder)
-        all_files = self.fixture.get_all_file(folder_url)
-        print('number of nrnt files :', len(all_files))
-        self.assertGreater(len(all_files), 0, 'File list is empty')
+        file_list = self.fixture.get_all_file(folder_url)
+        self.assertGreater(len(file_list), 0, 'File list is empty')
+
         file_match = []
-        for i in all_files:
-            nr_nt_re = re.match("[nr|nt]", i)
+        for i in file_list:
+            nr_nt_re = re.match("n[r|t]", i)
             if nr_nt_re:
                 file_match.append(i)
-        print('number of file names matched:', len(file_match))
-        self.assertEqual(len(all_files), len(file_match), 'Missing some nrnt files')
+        self.assertEqual(len(file_list), len(file_match), 'Missing some nrnt files')
 
     def test_2_update(self, files=2):
         print('Update ncbi nrnt blast...')
@@ -58,6 +58,23 @@ class TestNcbiBlastData(unittest.TestCase):
                                    self.fixture.config['readme_file'])
         self.assertTrue(os.path.isfile(readme_file),
                         'Cannot find RDM README+ file.')
+
+    def test_5_download(self):
+        print("Check file download...")
+        start_time = os.path.getctime(self.fixture.destination_dir)
+        self.fixture.download(download_file_number=2)
+        end_time = os.path.getctime(self.fixture.destination_dir)
+        self.assertGreater(end_time, start_time, "No new files downloaded")
+
+        directory_list = os.listdir(self.fixture.destination_dir)
+        download_file_size = 0
+        if not set(directory_list).isdisjoint(set(self.fixture.all_files)):
+            for directory_file in directory_list:
+                if directory_file in self.fixture.all_files:
+                    download_file_size = os.path.getsize(directory_file)
+                    self.assertGreater(download_file_size, 0, 'Downloaded file is empty')
+        else:
+            print('Could not find any expected download files in destination folder')
 
 
 if __name__ == '__main__':
