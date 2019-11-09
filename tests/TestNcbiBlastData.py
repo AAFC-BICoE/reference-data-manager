@@ -1,8 +1,7 @@
-import unittest
 import os
-from brdm.NcbiBlastData import NcbiBlastData
 import re
-from datetime import datetime
+import unittest
+from brdm.NcbiBlastData import NcbiBlastData
 
 
 class TestNcbiBlastData(unittest.TestCase):
@@ -36,7 +35,8 @@ class TestNcbiBlastData(unittest.TestCase):
             nr_nt_re = re.match("n[r|t]", i)
             if nr_nt_re:
                 file_match.append(i)
-        self.assertEqual(len(file_list), len(file_match), 'Missing some nrnt files')
+        self.assertEqual(len(file_list), len(file_match),
+                         'Missing some nrnt files')
 
     def test_2_update(self, files=2):
         print('Update ncbi nrnt blast...')
