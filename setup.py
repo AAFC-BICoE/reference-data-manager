@@ -28,13 +28,14 @@ if os.path.exists(requires_file):
 
 setup(
     name="reference-data-manager",
-    version="0.8.1",
+    version="0.8.2",
 
     description='''Bioinformatics Reference Data Manager is an application
     used to download, backup and update of reference data, required for
     various bioinformatics analysis''',
 
     long_description=readme,
+    long_description_content_type='text/markdown',
 
     author='Chunfang Zheng, Oksana Korol',
     author_email='aafc.bice-ceib.aac@canada.ca',
