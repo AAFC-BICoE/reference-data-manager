@@ -1,7 +1,7 @@
 asn1crypto==0.24.0
 beautifulsoup4==4.6.3
 biopython==1.72
-certifi==2018.10.15
+certifi==2019.9.11
 cffi==1.11.5
 chardet==3.0.4
 cryptography==2.3.1
@@ -16,11 +16,11 @@ pycparser==2.19
 pyOpenSSL==18.0.0
 PySocks==1.6.8
 PyYAML==4.2b1
-reference-data-manager==0.8.1
-requests==2.20.0
+requests==2.22.0
 requests-ftp==0.3.1
 requests-toolbelt==0.8.0
 six==1.11.0
+TBB==0.1
 tqdm==4.28.1
 twine==1.11.0
-urllib3==1.23
+urllib3==1.25.2
