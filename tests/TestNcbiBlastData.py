@@ -25,6 +25,7 @@ class TestNcbiBlastData(unittest.TestCase):
 
     def test_1_get_all_file(self):
         print('Get ncbi nrnt blast file list...')
+        file_list = []
         folder_url = os.path.join(self.fixture.login_url,
                                   self.fixture.download_folder)
         file_list = self.fixture.get_all_file(folder_url)
@@ -67,15 +68,16 @@ class TestNcbiBlastData(unittest.TestCase):
         self.assertGreater(end_time, start_time, "No new files downloaded")
 
         directory_list = os.listdir(self.fixture.destination_dir)
+        file_list = self.fixture.all_files
         download_file_size = 0
-        if not set(directory_list).isdisjoint(set(self.fixture.all_files)):
-            for directory_file in directory_list:
-                if directory_file in self.fixture.all_files:
-                    download_file_size = os.path.getsize(directory_file)
-                    self.assertGreater(download_file_size, 0,
-                                       'Downloaded file is empty')
-        else:
-            print('Expected download files not found')
+        self.assertFalse(set(directory_list).isdisjoint(set(file_list)),
+                         'Expected download file not found')
+
+        for directory_file in directory_list:
+            if directory_file in file_list:
+                download_file_size = os.path.getsize(directory_file)
+                self.assertGreater(download_file_size, 0,
+                                   'Downloaded file is empty')
 
 
 if __name__ == '__main__':
