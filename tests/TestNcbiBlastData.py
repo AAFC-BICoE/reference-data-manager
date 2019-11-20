@@ -25,7 +25,6 @@ class TestNcbiBlastData(unittest.TestCase):
 
     def test_1_get_all_file(self):
         print('Get ncbi nrnt blast file list...')
-        file_list = []
         folder_url = os.path.join(self.fixture.login_url,
                                   self.fixture.download_folder)
         file_list = self.fixture.get_all_file(folder_url)
