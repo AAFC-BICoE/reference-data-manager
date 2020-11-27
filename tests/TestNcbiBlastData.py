@@ -61,13 +61,15 @@ class TestNcbiBlastData(unittest.TestCase):
 
     def test_5_download(self):
         print("Check file download...")
+        folder_url = os.path.join(self.fixture.login_url,
+                                  self.fixture.download_folder)
+        file_list = self.fixture.get_all_file(folder_url)
         start_time = os.path.getctime(self.fixture.destination_dir)
         self.fixture.download(download_file_number=2)
         end_time = os.path.getctime(self.fixture.destination_dir)
         self.assertGreater(end_time, start_time, "No new files downloaded")
 
         directory_list = os.listdir(self.fixture.destination_dir)
-        file_list = self.fixture.all_files
         download_file_size = 0
         self.assertFalse(set(directory_list).isdisjoint(set(file_list)),
                          'Expected download file not found')
@@ -77,6 +79,7 @@ class TestNcbiBlastData(unittest.TestCase):
                 download_file_size = os.path.getsize(directory_file)
                 self.assertGreater(download_file_size, 0,
                                    'Downloaded file is empty')
+
 
 
 if __name__ == '__main__':
