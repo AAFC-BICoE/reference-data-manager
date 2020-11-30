@@ -16,7 +16,6 @@ dependencies:
   - certifi=2019.9.11=py36_0
   - cffi=1.11.5=py36h5e8e0c9_1
   - chardet=3.0.4=py36_1003
-  - cryptography=2.3.1=py36hdffb7b8_0
   - cryptography-vectors=2.3.1=py36_1000
   - cython=0.29=py36hfc679d8_0
   - gmp=6.1.2=hfc679d8_0
@@ -69,6 +68,8 @@ dependencies:
   - setuptools=40.5.0=py36_0
   - six=1.11.0=py36_1001
   - sqlite=3.25.2=hb1c47c0_0
+  - tbb=2019.3=h2d50403_0
+  - tbb4py=2019.3=py36h2d50403_0
   - tk=8.6.8=ha92aebf_0
   - tqdm=4.28.1=py_0
   - twine=1.11.0=py_1
@@ -77,7 +78,6 @@ dependencies:
   - yaml=0.1.7=h470a237_1
   - zlib=1.2.11=h470a237_3
   - pip:
+    - cryptography==3.2.1
     - pyyaml==4.2b1
-    - reference-data-manager
     - urllib3==1.25.2
-
