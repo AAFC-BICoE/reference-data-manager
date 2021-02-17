@@ -79,5 +79,6 @@ dependencies:
   - pip:
     - cffi==1.14.5
     - cryptography==3.3.2
+    - reference-data-manager
     - pyyaml==4.2b1
     - urllib3==1.25.2
