@@ -2,7 +2,7 @@ asn1crypto==0.24.0
 beautifulsoup4==4.6.3
 biopython==1.72
 certifi==2019.9.11
-cffi==1.11.5
+cffi==1.14.5
 chardet==3.0.4
 cryptography==3.3.2
 cryptography-vectors==2.3.1
