@@ -14,7 +14,7 @@ dependencies:
   - bzip2=1.0.6=h470a237_2
   - ca-certificates=2019.10.16=0
   - certifi=2019.9.11=py36_0
-  - cffi=1.14.5=py36h5e8e0c9_1
+  - cffi=1.14.5
   - chardet=3.0.4=py36_1003
   - cryptography-vectors=2.3.1=py36_1000
   - cython=0.29=py36hfc679d8_0
@@ -32,7 +32,7 @@ dependencies:
   - mkl_random=1.0.1=py36_0
   - ncurses=6.1=hfc679d8_1
   - nettle=3.3=0
-  - numpy=1.15.0=py36hdbf6ddf_0
+  - numpy=1.15.0
   - numpy-base=1.15.0=py36h1793315_0
   - openssl=1.0.2p=h470a237_1
   - pcre=8.41=hfc679d8_3
