@@ -10,7 +10,7 @@ Cython==0.29
 idna==2.7
 mkl-fft==1.0.6
 mkl-random==1.0.1
-numpy==1.15.0
+numpy==1.22.0
 pkginfo==1.4.2
 pycparser==2.19
 pyOpenSSL==18.0.0
