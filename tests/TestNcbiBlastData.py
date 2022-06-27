@@ -7,9 +7,9 @@ from brdm.NcbiBlastData import NcbiBlastData
 class TestNcbiBlastData(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        self.fixture = NcbiBlastData('{}/test_config.yaml'.format(dir_path))
+        cls.fixture = NcbiBlastData('{}/test_config.yaml'.format(dir_path))
 
     '''
     @classmethod
@@ -79,7 +79,6 @@ class TestNcbiBlastData(unittest.TestCase):
                 download_file_size = os.path.getsize(directory_file)
                 self.assertGreater(download_file_size, 0,
                                    'Downloaded file is empty')
-
 
 
 if __name__ == '__main__':

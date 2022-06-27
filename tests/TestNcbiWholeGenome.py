@@ -6,10 +6,10 @@ from brdm.NcbiWholeGenome import NcbiWholeGenome
 
 class TestNcbiWholeGenome(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        self.fixture = NcbiWholeGenome('{}/test_config.yaml'
-                                       .format(dir_path))
+        cls.fixture = NcbiWholeGenome('{}/test_config.yaml'
+                                      .format(dir_path))
 
     '''
     @classmethod
@@ -54,8 +54,8 @@ class TestNcbiWholeGenome(unittest.TestCase):
         print('Restore ncbi taxonomy...')
         success = self.fixture.restore(strftime('%Y-%m-%d', gmtime()),
                                        os.path.join(
-                                            self.fixture.destination_dir,
-                                            'restoreTaxonomy')
+                                           self.fixture.destination_dir,
+                                           'restoreTaxonomy')
                                        )
         self.assertTrue(success, 'Failed in NCBI taxonomy restore.')
 

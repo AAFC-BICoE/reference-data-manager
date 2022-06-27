@@ -7,9 +7,9 @@ from brdm.NcbiSubsetData import NcbiSubsetData
 class TestNcbiSebsetData(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        self.fixture = NcbiSubsetData('{}/test_config.yaml'.format(dir_path))
+        cls.fixture = NcbiSubsetData('{}/test_config.yaml'.format(dir_path))
 
     '''
     @classmethod
