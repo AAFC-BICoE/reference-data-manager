@@ -51,11 +51,12 @@ class BaseRefData():
     def backup_dir(self, value):
         self._backup_dir = value
 
-    def load_config(self, config_file):
+    @staticmethod
+    def load_config(config_file):
         """Load the parameters in config file."""
         try:
             with open(config_file, 'r') as stream:
-                config = yaml.load(stream)
+                config = yaml.safe_load(stream)
         except yaml.YAMLError as e:
             print('Could not load configuration file. Error: {}'.format(e))
             exit(1)

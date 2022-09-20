@@ -6,10 +6,10 @@ from brdm.GreenGeneData import GreenGeneData
 
 class TestGreenGene(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        self.fixture = GreenGeneData('{}/test_config.yaml'
-                                     .format(dir_path))
+        cls.fixture = GreenGeneData('{}/test_config.yaml'
+                                    .format(dir_path))
 
     '''
     @classmethod
@@ -22,9 +22,13 @@ class TestGreenGene(unittest.TestCase):
 
         pass
     '''
+
     def test_1_download(self):
         print('Check method download...')
-        success = self.fixture.download(test=True)
+        try:
+            success = self.fixture.download(test=True)
+        except Exception as e:
+            print(e)
         self.assertTrue(success, 'Failed in GreenGene download.')
 
     def test_2_update(self):

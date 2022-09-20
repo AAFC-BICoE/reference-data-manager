@@ -7,16 +7,16 @@ from brdm.SilvaData import SilvaData
 
 class TestSilvaData(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        self.fixture = SilvaData('{}/test_config.yaml'.format(dir_path))
+        cls.fixture = SilvaData('{}/test_config.yaml'.format(dir_path))
 
     @classmethod
-    def tearDownClass(self):
-        if os.path.exists(self.fixture.destination_dir):
-            shutil.rmtree(self.fixture.destination_dir)
-        if os.path.exists(self.fixture.backup_dir):
-            shutil.rmtree(self.fixture.backup_dir)
+    def tearDownClass(cls):
+        if os.path.exists(cls.fixture.destination_dir):
+            shutil.rmtree(cls.fixture.destination_dir)
+        if os.path.exists(cls.fixture.backup_dir):
+            shutil.rmtree(cls.fixture.backup_dir)
         pass
 
     def test_1_download(self):
